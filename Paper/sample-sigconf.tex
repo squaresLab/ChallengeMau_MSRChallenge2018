@@ -31,7 +31,7 @@
 
 
 \begin{document}
-\title{Some name about debugging}
+\title{Some Name About Debugging}
 %\titlenote{Produces the permission block, and
 %  copyright information}
 %\subtitle{Extended Abstract}
@@ -84,7 +84,7 @@
 
 
 % The default list of authors is too long for headers.
-\renewcommand{\shortauthors}{B. Trovato et al.}
+%\renewcommand{\shortauthors}{B. Trovato et al.}
 
 
 \begin{abstract}
@@ -118,7 +118,7 @@
 
 
 
-\section{Approach}
+\section{Gathering Corpus}
 \subsection{Delimiting Debugging Regions}
 The first step towards being able to analyze the debugging
 process developers go through is to be able to tell when
@@ -162,7 +162,7 @@ all test cases pass.
 debugging areas. "P" 
 represents an event where the developer ran a test suite and all test cases
 passed, "F" is used when one or more tests failed. The horizontal brackets
-above show the different debugging areas("DA").}
+above show the different debugging areas ("DA").}
 \centering
 \includegraphics[width=0.5\textwidth]{images/demarcations.png}
 \end{figure}
@@ -171,12 +171,37 @@ We were able to obtain 634 debugging areas in the dataset
 provided by the MSR Challenge~\cite{msr18challenge}.
 Within these 634 debugging areas, there are 1,251,334
 different events, from which 1,748 are \textit{EditEvent's}
-that have associated a not-unknown Context, and therefore 
+that have associated a not-unknown Contexts, and therefore 
 contain a valid Simplified Syntax Tree. These will be 
 our primary subject of analysis.
 
+\subsection{Simplified Syntax Tree Differencing}
+Once we have two consecutive \textit{EditEvent's} within
+a debugging region, we procede to analyze the differences
+between their two associated Simplified Syntax Trees (SST).
+These are the modifications the developer performed
+while debugging.
+To perform the difference between trees we use the 
+state-of-the-art tree differencing
+tool APTED~\cite{Pawlik16Apted}.
+We run recursively through each of the statements in the 
+SST's creating a representation that can be understood by
+APTED. This tool returns a list of mappings between
+the SST of the previous \textit{EditEvent} and the SST
+of the following \textit{EditEvent}. This mapping
+accounts for node insertitons, deletions, and renaming.
+Once we know which nodes were modified from one \textit{EditEvent}
+to the following, we record the types of the modified statements.
+
+\section{Evaluation}
+
+\section{Threats to Validity}
+
+\section{Related Work}
 
 \section{Conclusions}
+
+
 
 \begin{acks}
  This section will be added for the camera-ready version.
