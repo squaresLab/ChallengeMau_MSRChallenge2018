@@ -31,7 +31,7 @@
 
 
 \begin{document}
-\title{Some Name About Debugging}
+\title{Some Name for the Paper}
 %\titlenote{Produces the permission block, and
 %  copyright information}
 %\subtitle{Extended Abstract}
@@ -115,8 +115,43 @@
 \maketitle
 
 \section{Introduction}
+Error repair is one of the most resource consuming tasks in 
+the software development process~\cite{Weiss07,Tassey02,Britton13}.
+In the last decade there has been increasing attention to 
+the concept of automatic program repair (APR). These are a 
+series of approaches whose intent is to repair software
+automatically (e.g.~\cite{legoues12,kim2013,Weimer13,long15SPR,long16proph,debroy10,perkins09,wei10}).
+A well-known family of techniques follows the \emph{generate-and-validate}
+approach (e.g., GenProg~\cite{legoues12}, 
+Par~\cite{kim2013}, TrpAutoRepair~\cite{Qi13TrpAutoR}, HDRepair~\cite{xuan16}) 
+which take as input a buggy program and a test suite containing
+passing and failing test cases.
+The passing test cases show the cases where the program  
+behaves as intended, and the failing test cases show desired behavior
+that is currently not happening therefore exposing a defect.
+The approaches then \emph{generate} variants of the buggy program
+called patch candidates, and \emph{validate} these patch
+candidates against the test suite with the intent of finding 
+a patch candidate that passess all test cases in the test suite.
 
-
+This process is particularly difficult because the search space
+for creating patch candidates is infinite. To create a patch 
+candidate the approach needs to pick a series of edits to apply.
+An edit consists of a location in the source code,
+and a mutation operator. The location describes the section
+of the code that will be modified, while the mutation operator
+outlines the type of edit that will be applied to the code.
+Currently most APR approaches handle a single edit per patch
+candidate, even though multi-edit repairs are vastly common in the 
+development process. One reason why this happens is because
+there has been few research dedicated to analyze multi-edit
+repairs with the goal of restricting the search space of possible edits that 
+can be applied together. This study intents to contribute to
+solve this problem by analyzing  
+the kind of edits that can be applied together to form
+multi-edit patches, therefore diminishing the knowledge
+gap that exists for this common but understudied kind of patches.
+\todo{extend this intro}
 
 \section{Gathering the Corpus}
 \subsection{Delimiting Debugging Regions}
@@ -159,8 +194,9 @@ all test cases pass.
 \begin{figure}[h]
 \label{demarcations}
 \caption{Example of the process used to obtain the demarcation of
-debugging areas. "P" 
-represents an event where the developer ran a test suite and all test cases
+debugging areas. The horizontal arrow represents a timeline showing
+the events when a test suite was executed. "P" 
+represents an event where all test cases in the test suite
 passed, "F" is used when one or more tests failed. The horizontal brackets
 above show the different debugging areas ("DA").}
 \centering
@@ -191,17 +227,280 @@ the SST of the previous \textit{EditEvent} and the SST
 of the following \textit{EditEvent}. This mapping
 accounts for node insertitons, deletions, and renaming.
 Once we know which nodes were modified from one \textit{EditEvent}
-to the following, we record the types of the modified statements.
+to the following, we record their corresponding statement types.
+
+\subsection{Association Rules}
+Association rule learning is a machine learning mechanism to identify
+strong relationships between objects in large datasets. 
+As a result, we obtain association rules, which are implications of the
+form $X \implies Y$, where $X$ is called the antecedent and 
+$Y$ is called the consequent.
+We use the well-know association rule learning approach called 
+Apriori~\cite{Agrawal94}. This learning mechanism takes into 
+account \textit{Confidence} (a measure of the likelyhood 
+of the consequent section being present given the 
+antecedent) and \textit{Support} (how frequently the set of
+statement types occurs in the corpus).
+
+Using our corpus of edits and their associated statement types, 
+we create Association Rules that provide guidelines
+for what statement types are applied commonly together. This
+information has great value in the area of Automatic 
+Program Repair.
 
 \section{Evaluation}
 
-\section{Threats to Validity}
+
+\begin{figure}[h]
+\label{ruleEval}
+\caption{The Y axis describes the percentage of instances covered
+fully, partially or not by the association rules when using 10 fold
+cross validation. The bars from left to right describe the cross validation
+results when using 90\%, 95\% and 100\% Confidence thresholds correspondingly.}
+\centering
+\includegraphics[width=0.5\textwidth]{images/assocRuleEval.png}
+\end{figure}
+
+To evaluate the effectiveness
+of the association rules and how these can build the
+necesary edits to create successful patches we first
+remove from our corpus the instances where the developers
+performed a single edit. This is because association rules
+by definition require at least two elements: an antecedent
+and a consequent. The purpose of this study is to be able to
+analyze and find relationships between two or more statement
+kinds, therefore edits where a single statement kind is altered
+are not our subject of analysis.
+
+
+First, we divide our 
+corpus in 10 folds. For each fold, we build association rules on the remaining
+nine, as described. Given the mined rules, we then we
+analyze how many testing patches (instances in the fold used as testing data) can be
+built by applying the learned rules.  We categorize them as either
+\emph{Fully covered}, \emph{Partially covered}, or \emph{Not covered}.
+
+To illustrate via example, 
+Table~\ref{rulesandinstances} shows three instances of patches in the testing
+data, and three rules. Instance 1 can be constructed by
+applying rules 1 and 3 and is thus classified as Fully
+covered. Rule 1 would cover the first three edits of Instance 2
+instance, but there is no way to create the Replace (``Rep'') mutation using the
+listed rules.  This instance is classified as Partially covered. For Instance 3,
+even though Rule 3 
+contains two of the edits in the rule's antecedent, the instance does not
+contain the rule's consequent.  The rules do not apply, and thus this instance
+is classified as Not covered.
+
+\begin{table}[ht]
+  \centering
+  \caption{Patch instances (top); associated association rules (bottom). \label{rulesandinstances}}{\small
+\begin{tabular}{ll}
+\toprule
+\multicolumn{2}{c}{Instances} \\
+\midrule
+1 & Del; App; NullCheck; ObjInit \\
+2 & Del; App; NullCheck; Rep \\
+3 & App; NullCheck; CastMut \\  
+\midrule
+ \multicolumn{2}{c}{Rules} \\                     
+\midrule
+1 & Del $\wedge$ App $\rightarrow$ NullCheck \\  
+2 & App $\wedge$ ParamRep $\rightarrow$ Rep \\   
+3 &App $\wedge$ NullCheck $\rightarrow$ ObjInit\\
+\bottomrule
+\end{tabular}
+
+}
+\end{table}
+
+\looseness-1
+Finally, we performed this analysis at 6 different confidence thresholds
+(50\%, 60\%, 70\%, 80\%, 90\%, 100\%) to analyze the tradeoff between ruleset expressive
+power and size. A high confidence produces 
+a small number of very accurate rules (when the
+antecedent is present, it is very likely that the consequent will be present as
+well).  Setting the confidence lower produces the opposite trade-off:
+a large set of rules (covering more instances) where if the antecedent is
+present, it is less likely that 
+the consequent will be present too. For each confidence
+threshold, we performed a standard 10-fold cross validation process with all the
+instances and all the rules for each fold and finally, we aggregate the results
+from all folds.
+
+\begin{comment}
+\begin{table}[ht]
+\centering
+
+\begin{tabular}{|c|rrrr|}
+\toprule
+ Confidence(\%) & Rule count & Fully Cov & Partially Cov & Not Cov \\
+\midrule
+100 & 185.4 & 119.9 & 3.2 & 194.8 \\
+90 & 251.4  & 269.3 & 4.5 & 44.6 \\
+80 & 358.2  & 290.5 & 4.7 & 23.2 \\
+70 & 438.7 & 298.7 & 5.9 & 13.8 \\
+60 & 551.8 & 304.4 & 6.6 & 7.4   \\
+50 & 701.8 & 310.0 & 5.9 & 2.5 \\
+\bottomrule
+\end{tabular}
+\center
+  \caption{10-fold cross validation with different confidence thresholds. \label{10FoldXValResults}}
+\end{table} 
+\end{comment}
+
+Figure~\ref{fig:assocRulesEvaluation} shows results.  As expected, the number of rules created
+increases as confidence decreases.  Note also that the
+number of Fully Covered instances increases as the confidence decreases, due to
+the fact that there are more rules, even though these rules are less accurate.
+
+APR would benefit from having a small number of very accurate (high confidence)
+rules that would describe what edit to perform next after a series of edits, but
+at the same time, it needs rules that are flexible enough that they can
+generalize to a big portion of the patches.
+%
+We find a good tradeoff at a 
+confidence threshold of 90\%. The 100\%
+threshold provides very accurate rules, but can fully cover only
+37.7\% of the evaluation patches. By contrast, the 90\% confidence
+threshold produces slightly more rules, but they are able to fully cover 84.6\%
+of the patches. 
+
+
+
+\section{Threats to Validity} \label{threatsVal}
+
+\noindent\textbf{Internal validity:}
+Regarding possible errors in our implementation and experiments, to run our
+comparison with Genprog, we used an open-source implementation of GenProg
+targeting Java. We release our code, as well as our templates,
+independently-generated tests, and mined models for scrutiny and extension by other
+researchers, to mitigate the risk of errors in our implementation or approach. 
+ We also use 10-fold cross validation in
+assessing our model and association rules, to reduce the risk of training and testing on the same
+data.  
+%REMOVE THIS FOR CAMERA READY
+%in the project mentioned before 
+
+\noindent\textbf{External validity:} 
+It is possible 
+that our results will not generalize to external datasets and to
+real bugs. To mitigate this concern, we build our model from well-known open-source
+programs, covering a diversity of applications, and distinct from the dataset
+from which the models were mined, and we evaluate our approach with bugs from an open-source framework.
+
+There is also risk of producing low quality patches that would not 
+generalize
+to a different description of desired program behavior. We attenuate 
+this by 
+assessing the quality of the generated patches with a held-out test suite.
+There is risk in the fact that we are manually giving the
+faulty location to the APR tool, since APR tools do not know in advance what the 
+fault location is. This is for the purposes of evaluating the patch creating 
+process
+only without the noise that fault localization might introduce.
+
+\noindent\textbf{Construct validity:}
+Regarding the suitability of our evaluation metrics, we evaluate patch
+quality by running the generated patches on a second test suite created
+from a human patch, which is to a certain extent a biased measure since we can
+not guarantee that the human created patch is perfect~\cite{smith15}. Nevertheless, we consider 
+this to be a
+best known practice, since this way we provide an alternative to subjectively 
+asking a biased human developer
+whether he/she considered the patch to be correct or not. 
+
+We also rely on Evosuite~\cite{Fraser11Evosuite} as our test suite generation
+mechanism for the held-out test suite used for evaluation, and we acknowledge
+that the test suites created by this tool may not be perfect, nor provide full
+coverage for all cases.  Nonetheless, this is a state-of-the-art test suite
+generation tool that mitigates the risk of bias in manually constructing
+evaluation test suites.
+
+\section{Related Work} \label{relatedWork}
+
+There have been previous efforts to create an edit model based on human behavior.  
+Soto et al.~\cite{Soto16} 
+built a probabilistic model to describe the replace 
+operator only. They do not evaluate the model in the context of a repair
+tool, and the model is based on an instance count of statements rather than a more 
+accurate analysis of AST differences, which our model was built from.  
+HDRepair~\cite{xuan16} 
+uses fix history
+to assess patch suitability and fitness in the context of a genetic
+programming search strategy. The fitness of the generated
+fix candidates is determined by the frequency with which the changes included in
+a given patch occur in the corpus, using a graph-based representation of the bug
+fixes.  Similarly, Prophet~\cite{long16proph} uses a
+probabilistic model of a subset of our considered mutation operators built on 
+the history of 8 different projects to rank candidate
+patches.  Our approach follows this intuition to mimic human
+behavior; unlike the previous work, we apply this knowledge when actually
+creating patch candidates rather than when evaluating them, which reduces the 
+search space at creation time.  
+
+Zhong and Su~\cite{zhong15} perform an empirical study of
+real bug fixes on six projects, studying the incidence of three mutation
+operators, among other questions about the applicability of APR.  Martinez and
+Monperrus~\cite{martinez15} similarly study mutation operator incidence across 
+14 
+projects. Our work considers a broader set of
+mutation operators over a larger corpus, the largest, to the best of our
+knowledge, studied in existing work. To counter the 
+risk of overfitting to a small set of training projects as performed before, our 
+current study trains the model over 500 projects, covering a diversity 
+of domains.
+
+Par~\cite{kim2013} describes a manual set of 10 templates of common behavior to
+create patches, showing that such templates result in patches of higher
+human-adjudged acceptability than statement-edit-based patches.  Our study takes 
+into consideration a superset
+of these templates, provides steps towards
+accounting for multi-edit source code changes, an understudied problem, and,
+importantly, mines and models these operators and their incidence automatically
+(rather than manually).
+
+There exist a broad array of APR techniques proposed, especially recently; we
+survey many of them in Section~\ref{background}, focusing on heuristic or
+syntactic generate-and-validate techniques.  Semantic-based techniques use
+semantic analysis or reasoning~\cite{nguyen13,mechtaev15,Mechtaev2016,Bach17S3}, or
+semantic search~\cite{ke15} to construct candidate patches.  Similarly,
+synthesis-based repair is a family of techniques that uses constraints to build
+patches following the description of the constraints~\cite{jin11,wei10}. These constraints may be
+specifications created by developers, formal verification, invariants,
+etc.~\cite{jin11,wei10}.  Such techniques typically use synthesis to construct
+repairs, with a different mechanism for both constructing and traversing the
+search space, and our approach is thus less immediately comparable.
+
 
 \section{Related Work}
+Soto et al.~\cite{Soto18} have created association rules to inform the APR
+process basing their corpus in \textbf{mutation operators} taken from popular Github projects
+written in Java, 
+different from our approach which creates association rules for \textbf{statement types} 
+based in the MSR Challenge dataset~\cite{msr18challenge}. Mutation operators help to 
+inform what \textit{action} to perform next, while statement types help to inform what
+\textit{location/object}\todo{pick one of these two words} to modify next. 
 
 \section{Conclusions}
 
 
+
+The rules created with the entire corpus and 95\% confidence and 1\% support are:
+\begin{itemize}
+ \item ReturnStatement \& VariableDeclaration $\implies$ Assignment
+ \item IfElseBlock \& VariableDeclaration $\implies$ Assignment
+ \item ExpressionStatement \& VariableDeclaration $\implies$ Assignment
+ \item VariableDeclaration $\implies$ Assignment
+ \item IfElseBlock \& ExpressionStatement $\implies$ Assignment
+ \item ExpressionStatement \& ReturnStatement $\implies$ Assignment
+ \item IfElseBlock $\implies$ Assignment
+ \item ReturnStatement $\implies$ Assignment
+ \item IfElseBlock \& Assignment $\implies$ VariableDeclaration
+ \item Assignment \& ReturnStatement $\implies$ VariableDeclaration
+ \end{itemize}
+All rules ranked by support are available online\footnote{The links to the mentioned files 
+will be made available after double blind review}
 
 \begin{acks}
  This section will be added for the camera-ready version.
