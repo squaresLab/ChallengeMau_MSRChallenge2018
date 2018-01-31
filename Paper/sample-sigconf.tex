@@ -151,7 +151,7 @@ solve this problem by analyzing
 the kind of edits that can be applied together to form
 multi-edit patches, therefore diminishing the knowledge
 gap that exists for this common but understudied kind of patches.
-\todo{extend this intro}
+\todo{extend this intro maybe}
 
 \section{Gathering the Corpus}
 \subsection{Delimiting Debugging Regions}
@@ -192,7 +192,6 @@ by the failing test cases, but still hasn't been able to make
 all test cases pass.
 
 \begin{figure}[h]
-\label{demarcations}
 \caption{Example of the process used to obtain the demarcation of
 debugging areas. The horizontal arrow represents a timeline showing
 the events when a test suite was executed. "P" 
@@ -201,6 +200,7 @@ passed, "F" is used when one or more tests failed. The horizontal brackets
 above show the different debugging areas ("DA").}
 \centering
 \includegraphics[width=0.5\textwidth]{images/demarcations.png}
+\label{demarcations}
 \end{figure}
 
 We were able to obtain 634 debugging areas in the dataset 
@@ -251,16 +251,6 @@ Program Repair.
 \section{Evaluation}
 
 
-\begin{figure}[h]
-\label{ruleEval}
-\caption{The Y axis describes the percentage of instances covered
-fully, partially or not by the association rules when using 10 fold
-cross validation. The bars from left to right describe the cross validation
-results when using 90\%, 95\% and 100\% Confidence thresholds correspondingly.}
-\centering
-\includegraphics[width=0.5\textwidth]{images/assocRuleEval.png}
-\end{figure}
-
 To evaluate the effectiveness
 of the association rules and how these can build the
 necesary edits to create successful patches we first
@@ -269,209 +259,159 @@ performed a single edit. This is because association rules
 by definition require at least two elements: an antecedent
 and a consequent. The purpose of this study is to be able to
 analyze and find relationships between two or more statement
-kinds, therefore edits where a single statement kind is altered
+kinds, therefore events where a single statement kind is altered
 are not our subject of analysis.
 
+We then perform a 10 fold cross validation over the corpus to 
+check that the association rules are able to generalize to a
+larger corpus. First, we divide our corpus into 10 folds.
+For each of the folds we perform the following actions:
+the selected fold is used as testing data, and the
+remaining nine folds are used to create association rules.
+We then analyze how many of the events in the test data
+(the selected fold) can be built from the association 
+rules created from the remaining nine folds.
+The learned rules can either cover all the edits in an event (the 
+event is \emph{fully covered}), they can cover some of the edits in an 
+event (the event is \emph{partially covered}), or they can cover none of
+the edits in an event (the event is \emph{not covered}).
 
-First, we divide our 
-corpus in 10 folds. For each fold, we build association rules on the remaining
-nine, as described. Given the mined rules, we then we
-analyze how many testing patches (instances in the fold used as testing data) can be
-built by applying the learned rules.  We categorize them as either
-\emph{Fully covered}, \emph{Partially covered}, or \emph{Not covered}.
+We show an example for further understanding of the coverage concept.
+Table~\ref{rulesandinstances} shows three events, each event is a 
+highly granular step towards fixing an error in the source code. In 
+our example Event~1 describes an step in the debugging process 
+where the developer modified an Assignment, a ForLoop and an IfElseBlock.
+The rules shown in Table~\ref{rulesandinstances} represent rules created
+from the remaining nine folds of the corpus. In our example: Rule~1 
+indicates that when an Assignment and a ForLoop have been modified,
+the next step would be to modify an IfElseBlock.
 
-To illustrate via example, 
-Table~\ref{rulesandinstances} shows three instances of patches in the testing
-data, and three rules. Instance 1 can be constructed by
-applying rules 1 and 3 and is thus classified as Fully
-covered. Rule 1 would cover the first three edits of Instance 2
-instance, but there is no way to create the Replace (``Rep'') mutation using the
-listed rules.  This instance is classified as Partially covered. For Instance 3,
-even though Rule 3 
-contains two of the edits in the rule's antecedent, the instance does not
-contain the rule's consequent.  The rules do not apply, and thus this instance
-is classified as Not covered.
+In this example, Event~1 is fully covered since Rule~1 covers all
+the edits in the event. For Event~2, Rule~1 does not apply, even though
+Event~2 contains the antecedent of Rule~1, it does not contain the 
+concequent, therefore the rule would not be successfully applied in a
+real-life context. Rule~2 does apply to partially cover the latter two
+edits of Event~2, but the first edit (Assignment) would not be covered
+therefore Event~2 is partially covered. Finally Event~3 is not covered,
+event when some of its edits are contained in the antecedent of the rules,
+there is no rule that would successfully predict the behavior of this 
+event. 
+
+%There are 84 stmt kinds in this corpus
 
 \begin{table}[ht]
   \centering
-  \caption{Patch instances (top); associated association rules (bottom). \label{rulesandinstances}}{\small
+  \caption{Events (top); learned association rules (bottom). \label{rulesandinstances}}{\small
 \begin{tabular}{ll}
 \toprule
-\multicolumn{2}{c}{Instances} \\
+\multicolumn{2}{c}{Events} \\
 \midrule
-1 & Del; App; NullCheck; ObjInit \\
-2 & Del; App; NullCheck; Rep \\
-3 & App; NullCheck; CastMut \\  
+1 & Assignment; ForLoop; IfElseBlock  \\
+2 & Assignment; ForLoop; VariableDeclaration\\  
+3 & Assignment; ForLoop;  ReturnStmt \\
 \midrule
  \multicolumn{2}{c}{Rules} \\                     
 \midrule
-1 & Del $\wedge$ App $\rightarrow$ NullCheck \\  
-2 & App $\wedge$ ParamRep $\rightarrow$ Rep \\   
-3 &App $\wedge$ NullCheck $\rightarrow$ ObjInit\\
+1 & Assignment $\wedge$ ForLoop $\rightarrow$ IfElseBlock \\  
+2 & ForLoop $\rightarrow$ VariableDeclaration \\   
 \bottomrule
 \end{tabular}
 
 }
 \end{table}
 
-\looseness-1
-Finally, we performed this analysis at 6 different confidence thresholds
-(50\%, 60\%, 70\%, 80\%, 90\%, 100\%) to analyze the tradeoff between ruleset expressive
-power and size. A high confidence produces 
-a small number of very accurate rules (when the
-antecedent is present, it is very likely that the consequent will be present as
-well).  Setting the confidence lower produces the opposite trade-off:
-a large set of rules (covering more instances) where if the antecedent is
-present, it is less likely that 
-the consequent will be present too. For each confidence
+Finally we performed this analysis at 3 different confidence thresholds
+(90\%, 95\%, 100\%) to compare the accuracy of the rules against the 
+number of rules that can be created with lower confidence. 
+There is a spectrum of confidence with which association rules
+can be constructed. High confidence produces a small set of very
+accurate rules, in which it is very likely that when the antecedent
+is present, the concequent will be present as well. But this approach
+does not allow for much flexibility and it overfits to the corpus 
+they were created from. In the oposite side of the spectrum, low 
+confidence, creates a wide set of rules that are less accurate (if
+the antecedent is present is does not necessarily mean that the 
+consequent will be present as well).All 
+experiments have been performed with a support of 1\%, which 
+means that the rules created must describe
+at least 1\% of the instances of the corpus they are build from.
+
+Previous studies show that in the 0\%-100\% spectrum, 
+90\% confidence is an adecuate threshold 
+for mantaining a balance between accuracy and flexibility when evaluated
+discretely in intervals of 10 percentage points~\cite{Soto18}.
+In this study we take it one step further and analyze the midpoint between 90\%
+confidence and 100\% confidence to find if by increasing the confidence to a 5\%
+we can obtain results with similar flexibility to rules created with 90\% 
+confidence but the accuracy of the rules created with 100\% confidence.
+For each confidence
 threshold, we performed a standard 10-fold cross validation process with all the
-instances and all the rules for each fold and finally, we aggregate the results
+events and all the rules for each fold and finally, we aggregate the results
 from all folds.
 
-\begin{comment}
-\begin{table}[ht]
+Figure~\ref{ruleEvaluation} shows our results for each of the 
+different confidence thresholds as described below.
+
+\noindent\textbf{90\% confidence threshold:}
+When evaluating the rules created under a 90\% threshold, 94.14\% of the 
+events are fully covered, 1.87\% are partially covered, and 3.99\% are
+not covered. When using this approach, an average of 2837.2 rules were
+created for the 10 folds.
+
+\noindent\textbf{95\% confidence threshold:}
+When using a 95\% threshold, 93.80\% are fully covered, 2.04\% are
+partially covered, and 4.9\% are not covered. In average 2134.3 rules
+were created.
+
+\noindent\textbf{100\% confidence threshold:}
+Finally, when using a 100\% confidence threshold, 35.85\% are fully
+covered, 2.29\% are partiallly covered, and 72.80\% are not covered.
+In average 1484.6 rules were created when using this approach.
+
+We found that when creating association
+rules with empirical data for automatic program repair, 95\% confidence
+is an even better threshold than 90\% because it maintains very similar flexibility 
+to the 90\% threshold but improves the accuracy by increasing the confidence. 
+This also means that the number of rules created decreases, which improves
+the search space by restricting it to a smaller number of more accurate rules.
+ 
+
+\begin{figure}[h]
+\caption{The wide bars are described by the left Y axis. This represents
+the percentage of instances covered
+fully, partially or not by the association rules when using 10 fold
+cross validation (higher full coverage is better). 
+The thin bars are described by the right Y axis.
+This represents the number of rules created for each confidence threshold 
+(lower is better).
+The bars from left to right describe the cross validation
+results when using 90\%, 95\% and 100\% confidence thresholds correspondingly.}
 \centering
+\includegraphics[width=0.5\textwidth]{images/assocRuleEval.png}
+\label{ruleEvaluation}
+\end{figure}
 
-\begin{tabular}{|c|rrrr|}
-\toprule
- Confidence(\%) & Rule count & Fully Cov & Partially Cov & Not Cov \\
-\midrule
-100 & 185.4 & 119.9 & 3.2 & 194.8 \\
-90 & 251.4  & 269.3 & 4.5 & 44.6 \\
-80 & 358.2  & 290.5 & 4.7 & 23.2 \\
-70 & 438.7 & 298.7 & 5.9 & 13.8 \\
-60 & 551.8 & 304.4 & 6.6 & 7.4   \\
-50 & 701.8 & 310.0 & 5.9 & 2.5 \\
-\bottomrule
-\end{tabular}
-\center
-  \caption{10-fold cross validation with different confidence thresholds. \label{10FoldXValResults}}
-\end{table} 
-\end{comment}
+\todo{dar los numeros para cada threshoold}
 
-Figure~\ref{fig:assocRulesEvaluation} shows results.  As expected, the number of rules created
-increases as confidence decreases.  Note also that the
-number of Fully Covered instances increases as the confidence decreases, due to
-the fact that there are more rules, even though these rules are less accurate.
-
-APR would benefit from having a small number of very accurate (high confidence)
-rules that would describe what edit to perform next after a series of edits, but
-at the same time, it needs rules that are flexible enough that they can
-generalize to a big portion of the patches.
-%
-We find a good tradeoff at a 
-confidence threshold of 90\%. The 100\%
-threshold provides very accurate rules, but can fully cover only
-37.7\% of the evaluation patches. By contrast, the 90\% confidence
-threshold produces slightly more rules, but they are able to fully cover 84.6\%
-of the patches. 
 
 
 
 \section{Threats to Validity} \label{threatsVal}
 
 \noindent\textbf{Internal validity:}
-Regarding possible errors in our implementation and experiments, to run our
-comparison with Genprog, we used an open-source implementation of GenProg
-targeting Java. We release our code, as well as our templates,
-independently-generated tests, and mined models for scrutiny and extension by other
-researchers, to mitigate the risk of errors in our implementation or approach. 
- We also use 10-fold cross validation in
-assessing our model and association rules, to reduce the risk of training and testing on the same
-data.  
-%REMOVE THIS FOR CAMERA READY
-%in the project mentioned before 
+To tackle possible errors in our implementation and experiments, we release our code
+to be reviewed by the other researchers. We also use 10-fold cross validation 
+when evaluating the association rules
+to reduce the risk of training and testing on the same data.  
 
 \noindent\textbf{External validity:} 
 It is possible 
 that our results will not generalize to external datasets and to
-real bugs. To mitigate this concern, we build our model from well-known open-source
-programs, covering a diversity of applications, and distinct from the dataset
-from which the models were mined, and we evaluate our approach with bugs from an open-source framework.
-
-There is also risk of producing low quality patches that would not 
-generalize
-to a different description of desired program behavior. We attenuate 
-this by 
-assessing the quality of the generated patches with a held-out test suite.
-There is risk in the fact that we are manually giving the
-faulty location to the APR tool, since APR tools do not know in advance what the 
-fault location is. This is for the purposes of evaluating the patch creating 
-process
-only without the noise that fault localization might introduce.
-
-\noindent\textbf{Construct validity:}
-Regarding the suitability of our evaluation metrics, we evaluate patch
-quality by running the generated patches on a second test suite created
-from a human patch, which is to a certain extent a biased measure since we can
-not guarantee that the human created patch is perfect~\cite{smith15}. Nevertheless, we consider 
-this to be a
-best known practice, since this way we provide an alternative to subjectively 
-asking a biased human developer
-whether he/she considered the patch to be correct or not. 
-
-We also rely on Evosuite~\cite{Fraser11Evosuite} as our test suite generation
-mechanism for the held-out test suite used for evaluation, and we acknowledge
-that the test suites created by this tool may not be perfect, nor provide full
-coverage for all cases.  Nonetheless, this is a state-of-the-art test suite
-generation tool that mitigates the risk of bias in manually constructing
-evaluation test suites.
-
-\section{Related Work} \label{relatedWork}
-
-There have been previous efforts to create an edit model based on human behavior.  
-Soto et al.~\cite{Soto16} 
-built a probabilistic model to describe the replace 
-operator only. They do not evaluate the model in the context of a repair
-tool, and the model is based on an instance count of statements rather than a more 
-accurate analysis of AST differences, which our model was built from.  
-HDRepair~\cite{xuan16} 
-uses fix history
-to assess patch suitability and fitness in the context of a genetic
-programming search strategy. The fitness of the generated
-fix candidates is determined by the frequency with which the changes included in
-a given patch occur in the corpus, using a graph-based representation of the bug
-fixes.  Similarly, Prophet~\cite{long16proph} uses a
-probabilistic model of a subset of our considered mutation operators built on 
-the history of 8 different projects to rank candidate
-patches.  Our approach follows this intuition to mimic human
-behavior; unlike the previous work, we apply this knowledge when actually
-creating patch candidates rather than when evaluating them, which reduces the 
-search space at creation time.  
-
-Zhong and Su~\cite{zhong15} perform an empirical study of
-real bug fixes on six projects, studying the incidence of three mutation
-operators, among other questions about the applicability of APR.  Martinez and
-Monperrus~\cite{martinez15} similarly study mutation operator incidence across 
-14 
-projects. Our work considers a broader set of
-mutation operators over a larger corpus, the largest, to the best of our
-knowledge, studied in existing work. To counter the 
-risk of overfitting to a small set of training projects as performed before, our 
-current study trains the model over 500 projects, covering a diversity 
-of domains.
-
-Par~\cite{kim2013} describes a manual set of 10 templates of common behavior to
-create patches, showing that such templates result in patches of higher
-human-adjudged acceptability than statement-edit-based patches.  Our study takes 
-into consideration a superset
-of these templates, provides steps towards
-accounting for multi-edit source code changes, an understudied problem, and,
-importantly, mines and models these operators and their incidence automatically
-(rather than manually).
-
-There exist a broad array of APR techniques proposed, especially recently; we
-survey many of them in Section~\ref{background}, focusing on heuristic or
-syntactic generate-and-validate techniques.  Semantic-based techniques use
-semantic analysis or reasoning~\cite{nguyen13,mechtaev15,Mechtaev2016,Bach17S3}, or
-semantic search~\cite{ke15} to construct candidate patches.  Similarly,
-synthesis-based repair is a family of techniques that uses constraints to build
-patches following the description of the constraints~\cite{jin11,wei10}. These constraints may be
-specifications created by developers, formal verification, invariants,
-etc.~\cite{jin11,wei10}.  Such techniques typically use synthesis to construct
-repairs, with a different mechanism for both constructing and traversing the
-search space, and our approach is thus less immediately comparable.
-
+real bug fixes. To mitigate this concern, we have created our corpus 
+from the dataset made available to us by the MSR Challenge~\cite{msr18challenge}
+which records the steps developers take while in the software development process.
+This dataset is gathered from a diverse pool of volunteers with different 
+backgrounds and levels of expertise.
 
 \section{Related Work}
 Soto et al.~\cite{Soto18} have created association rules to inform the APR
@@ -482,11 +422,34 @@ based in the MSR Challenge dataset~\cite{msr18challenge}. Mutation operators hel
 inform what \textit{action} to perform next, while statement types help to inform what
 \textit{location/object}\todo{pick one of these two words} to modify next. 
 
+\todo{add more related work}
+
 \section{Conclusions}
+In this study we mined the dataset provided by the MSR Challenge~\cite{msr18challenge}
+to create a corpus of highly granular edits performed by developers in the process
+of fixing an error in the source code. To be able to do this, we identify debugging
+regions taking into account the points in time when a test suite fails and after a 
+series of events all tests pass. We then inspect the changes between the simplified 
+syntax trees from each
+of the \textit{EditEvent's} within the debugging regions to create a corpus of 
+events (steps developers take towards fixing an error in the source code).
 
+We then create association rules to be able to obtain guidelines of what kinds of
+statement to edit together. This lessens an important gap of knowledge existing
+in automatic program repair, which is necessary to restrict the search space of 
+possible edits to perform to create successful multi-edit patches.
 
-
-The rules created with the entire corpus and 95\% confidence and 1\% support are:
+We create these association rules using three different confidence thresholds and
+we evaluate them using 10 fold cross validation. We measure how many of the events
+can be fully, partially, or not covered by the association rules.
+Our findings indicate that 95\% is a better confidence threshold as 
+opposed to 90\% as presented in previous studies~\cite{Soto18}. This is because
+a 95\% threshold is able to maintain a very similar flexibility of rules as a 90\%
+threshold, but it increases the accuracy of the rules created and decreases the 
+number of rules, therefore restricting the search space in automatic program repair.
+Below are shown the top 10 rules created with a 95\% confidence, a full list can be 
+found online\footnote{the link will be made available after double blind
+review since it may uncover the identity of the authors}:
 \begin{itemize}
  \item ReturnStatement \& VariableDeclaration $\implies$ Assignment
  \item IfElseBlock \& VariableDeclaration $\implies$ Assignment
@@ -499,8 +462,7 @@ The rules created with the entire corpus and 95\% confidence and 1\% support are
  \item IfElseBlock \& Assignment $\implies$ VariableDeclaration
  \item Assignment \& ReturnStatement $\implies$ VariableDeclaration
  \end{itemize}
-All rules ranked by support are available online\footnote{The links to the mentioned files 
-will be made available after double blind review}
+
 
 \begin{acks}
  This section will be added for the camera-ready version.
