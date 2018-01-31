@@ -22,7 +22,7 @@ def removeEmptyOnes(args):
 			for i in range(len(lineIns.strip().split(','))):
 				if lineIns.strip().split(',')[i] != '?':
 					numOfEdits+=1
-			if numOfEdits >= 3 :
+			if numOfEdits >= 2 :
 				cmd = "echo \""+ str(lineIns.strip())+ "\" >> " + str(tmpFile)
 				subprocess.call(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
 			else:
