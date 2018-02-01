@@ -31,7 +31,7 @@
 
 
 \begin{document}
-\title{Some Name for the Paper}
+\title{Some name}
 %\titlenote{Produces the permission block, and
 %  copyright information}
 %\subtitle{Extended Abstract}
@@ -47,31 +47,6 @@
   \postcode{15213}
 }
 \email{mauriciosoto@cmu.edu}
-
-\author{Chu-Pan Wong}
-\affiliation{%
-  \institution{Carnegie Mellon University}
-  \city{Pittsburgh}
-  \state{PA}
-  \postcode{15213}
-}
-\email{chupanw@cs.cmu.edu}
-
-\author{Jens Meinicke}
-\affiliation{%
-  \institution{University of Magdeburg}
-  \city{Germany}
-}
-\email{meinicke@ovgu.de}
-
-\author{Christian K\"{a}stner}
-\affiliation{%
-  \institution{Carnegie Mellon University}
-  \city{Pittsburgh}
-  \state{PA}
-  \postcode{15213}
-}
-\email{kaestner@cs.cmu.edu}
 
 \author{Claire Le Goues}
 \affiliation{%
@@ -126,9 +101,9 @@ approach (e.g., GenProg~\cite{legoues12},
 Par~\cite{kim2013}, TrpAutoRepair~\cite{Qi13TrpAutoR}, HDRepair~\cite{xuan16}) 
 which take as input a buggy program and a test suite containing
 passing and failing test cases.
-The passing test cases show the cases where the program  
+The passing test cases show the situations where the program  
 behaves as intended, and the failing test cases show desired behavior
-that is currently not happening therefore exposing a defect.
+that is currently not implemented therefore exposing a defect.
 The approaches then \emph{generate} variants of the buggy program
 called patch candidates, and \emph{validate} these patch
 candidates against the test suite with the intent of finding 
@@ -141,7 +116,7 @@ An edit consists of a location in the source code,
 and a mutation operator. The location describes the section
 of the code that will be modified, while the mutation operator
 outlines the type of edit that will be applied to the code.
-Currently most APR approaches handle a single edit per patch
+Currently most APR approaches produce single edits per patch
 candidate, even though multi-edit repairs are vastly common in the 
 development process. One reason why this happens is because
 there has been few research dedicated to analyze multi-edit
@@ -151,7 +126,46 @@ solve this problem by analyzing
 the kind of edits that can be applied together to form
 multi-edit patches, therefore diminishing the knowledge
 gap that exists for this common but understudied kind of patches.
-\todo{extend this intro maybe}
+
+We mined changes performed by developers in the debugging
+process by delimiting debugging regions in the dataset~\cite{msr18challenge} and comparing the simplified syntax
+trees (SST) of consecutive \textit{EditEvent's} using an 
+state-of-the-art tree differencing tool~\cite{Pawlik16Apted}.
+We then gather the statement kinds edited in each of the 
+differences between SST's and apply the well known association
+rule learning algorithm Apriori~\cite{Agrawal94}
+to obtain relationships that describe what statement kinds
+are edited commonly together. This knowledge helps to 
+bound the search space for automatic program repair approaches
+in the effort of building multi-edit patches.
+
+We evaluate the learned association rules by using a 10 fold
+cross validation mechanism, and analyzing how many of the edits
+in each event can be predicted by the association rules.
+We categorize the level to which the rules can predict edits
+analyzing what sections of the edits are covered by the 
+learned association rules. Finally we analyze
+the confidence level of the learned rules to a more granular 
+level than performed before in the context of automatic
+program repair. We found that when we use a 95\% confidence
+threshold, we can create association
+rules that maintain the same flexibility as previous
+studies with lower confidence thersholds, but increase
+the accuracy of the created rules.
+By performing this change, we also
+decrease the number of rules learned therefore
+delimiting even more the search space of potential edits
+performed by APR approaches to obtain successful patches.
+
+The main contributions of this paper are the following:
+\begin{itemize}
+\item \textbf{}
+
+\item \textbf{}
+
+\item \textbf{}
+
+\end{itemize}
 
 \section{Gathering the Corpus}
 \subsection{Delimiting Debugging Regions}
