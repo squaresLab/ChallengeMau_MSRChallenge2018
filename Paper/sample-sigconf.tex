@@ -31,7 +31,7 @@
 
 
 \begin{document}
-\title{Some name}
+\title{Common Statement Kind Changes and their Application in Multi-Edit Automatic Program Repair}
 %\titlenote{Produces the permission block, and
 %  copyright information}
 %\subtitle{Extended Abstract}
@@ -159,16 +159,40 @@ performed by APR approaches to obtain successful patches.
 
 The main contributions of this paper are the following:
 \begin{itemize}
-\item \textbf{}
+\item \textbf{Association rules} that describe the behavior
+of statement kinds that developers modify commonly together when
+trying to fix an error in source code.  
 
-\item \textbf{}
+\item \textbf{Higher Granularity Evaluation} 
+of confidence thresholds when creating
+association rules in the context of multi-edit automatic
+program repair using 10 fold cross validation and associatiotn
+rule coverage metrics.
 
-\item \textbf{}
+\item \textbf{Lessen the Knowledge Gap} existing in automatic
+program repair approaches which produce single edit patches and
+help narrow the search space to build successful multi-edit 
+patches.
 
 \end{itemize}
 
+The rest of this paper proceeds as follows:
+
+First we describe how the corpus was constructed by 
+delimiting debugging regions in the provided dataset(Section~\ref{delimitDebugRegions}) and recursively analyzing the
+differences between the SST's associatiated with EditEvent's
+withint the debugging regions(Section~\ref{sstDiff}). 
+We then use Apriori to build association rules with different
+confidence thresholds(Section~\ref{assocRules}). Finally
+we evaluate how expresive power of the learned rules by
+using 10 fold cross validation and association rule coverage
+(Section~\ref{eval}). Finally we have Threats to Validity and 
+Related Work sections (\ref{threatsVal} and \ref{relWork} 
+accordingly), and a Conclusion section (\ref{conclusions}).
+
 \section{Gathering the Corpus}
 \subsection{Delimiting Debugging Regions}
+\label{delimitDebugRegions}
 The first step towards being able to analyze the debugging
 process developers go through is to be able to tell when
 developers are trying to fix a bug. A very straightforward 
@@ -226,6 +250,7 @@ contain a valid Simplified Syntax Tree. These will be
 our primary subject of analysis.
 
 \subsection{Simplified Syntax Tree Differencing}
+\label{sstDiff}
 Once we have two consecutive \textit{EditEvent's} within
 a debugging region, we procede to analyze the differences
 between their two associated Simplified Syntax Trees (SST).
@@ -243,7 +268,8 @@ accounts for node insertitons, deletions, and renaming.
 Once we know which nodes were modified from one \textit{EditEvent}
 to the following, we record their corresponding statement types.
 
-\subsection{Association Rules}
+\section{Association Rules}
+\label{assocRules}
 Association rule learning is a machine learning mechanism to identify
 strong relationships between objects in large datasets. 
 As a result, we obtain association rules, which are implications of the
@@ -263,7 +289,7 @@ information has great value in the area of Automatic
 Program Repair.
 
 \section{Evaluation}
-
+\label{eval}
 
 To evaluate the effectiveness
 of the association rules and how these can build the
@@ -423,6 +449,7 @@ This dataset is gathered from a diverse pool of volunteers with different
 backgrounds and levels of expertise.
 
 \section{Related Work}
+\label{relWork}
 Soto et al.~\cite{Soto18} have created association rules to inform the APR
 process basing their corpus in \textbf{mutation operators} taken from popular Github projects
 written in Java, 
@@ -434,6 +461,7 @@ inform what \textit{action} to perform next, while statement types help to infor
 \todo{add more related work}
 
 \section{Conclusions}
+\label{conclusions}
 In this study we mined the dataset provided by the MSR Challenge~\cite{msr18challenge}
 to create a corpus of highly granular edits performed by developers in the process
 of fixing an error in the source code. To be able to do this, we identify debugging
