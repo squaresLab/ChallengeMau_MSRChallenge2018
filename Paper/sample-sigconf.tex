@@ -104,7 +104,7 @@ we evaluate association rule coverage with 10 fold cross validation.
 \ccsdesc[100]{Software and its engineering~Software evolution}
 
 
-\keywords{Debugging, Multi-edit automatic program repair}
+
 
 
 \maketitle
@@ -117,35 +117,23 @@ the concept of automatic program repair (APR). These are a
 series of approaches whose intent is to repair software
 automatically (e.g.~\cite{legoues12,kim2013,Weimer13,long15SPR,long16proph,debroy10,perkins09,wei10}).
 A well-known family of techniques follows the \emph{generate-and-validate}
-approach (e.g., GenProg~\cite{legoues12}, 
-Par~\cite{kim2013}, TrpAutoRepair~\cite{Qi13TrpAutoR}, HDRepair~\cite{xuan16}) 
+approach (e.g.~\cite{legoues12,kim2013,Qi13TrpAutoR,xuan16}), 
 which take as input a buggy program and a test suite containing
-passing and failing test cases.
-The passing test cases show the situations where the program  
-behaves as intended, and the failing test cases show desired behavior
-that is currently not implemented therefore exposing a defect.
+passing tests cases and failing test cases (which expose a defect).
 The approaches then \emph{generate} variants of the buggy program
 called patch candidates, and \emph{validate} these patch
-candidates against the test suite with the intent of finding 
-a patch candidate that passess all test cases in the test suite.
+candidates against the test suite.
 
 This process is particularly difficult because the search space
 for creating patch candidates is infinite. To create a patch 
 candidate the approach needs to pick a series of edits to apply.
-An edit consists of a location in the source code,
-and a mutation operator. The location describes the section
-of the code that will be modified, while the mutation operator
-outlines the type of edit that will be applied to the code.
-
 Currently most APR approaches use fault localization mechanisms to 
 narrow down which possible blocks of code are
 more suspicious than others.  
-These blocks of code are 
+These blocks are 
 a set of several possible statements, all of which are assigned
 the same likelihood of being selected for modification.
-Ultimately one of them is selected at random as a starting point 
-following the assumption that all statements within a block
-have the same likelihood of containing the error.
+Ultimately one of them is selected at random.
 We believe this selection could be improved by using
 developer's
 edit history. We therefore analyze the most commonly 
@@ -153,24 +141,13 @@ modified statement kinds and evaluate how the
 fault localization process can benefit from assigning
 a higher priority to the statements most commonly modified.
 
-After this first fault localization step, APR approaches 
-commonly produce single edits per patch
-candidate, even though multi-edit repairs are vastly common in the 
-development process. One reason why this happens is because
-there are time and hardware constraints in the APR process,
-the search space is infinite, and there are not enough guidelines
-to guide the search.
-This study intents to contribute to
-solve this problem by analyzing  
-the kind of edits that can be applied together to form
-multi-edit patches.
-
 We mined changes performed by developers in the debugging
-process by delimiting debugging regions in the dataset~\cite{msr18challenge} and comparing the simplified syntax
+process by delimiting debugging regions in the 
+dataset~\cite{msr18challenge} and comparing the simplified syntax
 trees (SST) of consecutive \textit{EditEvent's} using an 
 state-of-the-art tree differencing tool~\cite{Pawlik16Apted}.
-We then gather the statement kinds edited in each of the 
-differences between SST's and apply the association
+We then gather the statement kinds edited when
+differencing SST's and apply the association
 rule learning algorithm Apriori~\cite{Agrawal94}
 to obtain relationships that describe what statement kinds
 are edited commonly together. This knowledge helps to 
@@ -198,10 +175,13 @@ performed by APR approaches to obtain successful patches.
 
 The main contributions of this paper are the following:
 \begin{itemize}
-\item \textbf{Describe and Evaluate Distribution} of statement kinds being
-modified by developers to fix errors in source code by
-analyzing the likelihood of correctly choosing what statement
-kinds are modified using historic-based data.
+\item \textbf{Describe Distribution} of statement kinds being
+modified by developers to fix errors in source code. 
+
+\item \textbf{Evaluate
+the Selection Process} of what statement kinds to modify 
+to fix errors in source code using historic-based data against
+and equally-distributed random approach.
 
 \item \textbf{Create Association Rules} that describe the behavior
 of statement kinds that developers modify commonly together when
@@ -216,6 +196,8 @@ program repair using association rule coverage with
 \end{itemize}
 
 \section{Gathering the Corpus}
+\todo{add roadmap}
+
 \subsection{Delimiting Debugging Regions}
 \label{delimitDebugRegions}
 The first step towards being able to analyze the debugging
@@ -294,6 +276,7 @@ Once we know which nodes were modified from one \textit{EditEvent}
 to the following, we record their corresponding statement types.
 
 \section{Instrument creation}
+\todo{add roadmap}
 
 \subsection{Statement Kind Distribution}
 \label{stmtKindDistribution}
@@ -356,6 +339,7 @@ Program Repair.
 
 \section{Evaluation}
 \label{eval}
+\todo{add roadmap}
 
 \subsection{Historic-Based Statement Kind Selection}
 To evaluate the distribution of the statement kinds being modified
@@ -434,7 +418,8 @@ analyze and find relationships between two or more statement
 kinds, therefore events where a single statement kind is altered
 are not our subject of analysis.
 
-We then perform a 10 fold cross validation over the corpus to 
+We then analyze the coverage of the association rules using a
+10 fold cross validation approach to 
 check that the association rules are able to generalize to a
 larger corpus. First, we divide our corpus into 10 folds.
 For each of the folds we perform the following actions:
@@ -519,7 +504,8 @@ confidence and 100\% confidence to find if by increasing the confidence to a 5\%
 we can obtain results with similar flexibility to rules created with 90\% 
 confidence but the accuracy of the rules created with 100\% confidence.
 For each confidence
-threshold, we performed a standard 10-fold cross validation process with all the
+threshold, we evaluated association rule coverage performing
+a standard 10-fold cross validation process with all the
 events and all the rules for each fold and finally, we aggregate the results
 from all folds.
 
@@ -622,7 +608,7 @@ in automatic program repair, which is necessary to restrict the search space of
 possible edits to perform to create successful multi-edit patches.
 
 We create these association rules using three different confidence thresholds and
-we evaluate them using 10 fold cross validation. We measure how many of the events
+we evaluate their coverage using 10 fold cross validation. We measure how many of the events
 can be fully, partially, or not covered by the association rules.
 Our findings indicate that 95\% is a better confidence threshold as 
 opposed to 90\% as presented in previous studies~\cite{Soto18}. 
