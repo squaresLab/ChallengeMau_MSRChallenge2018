@@ -109,6 +109,11 @@ called patch candidates, and \emph{validate} these patch
 candidates against the test suite with the intent of finding 
 a patch candidate that passess all test cases in the test suite.
 
+\todo{say something like, usually fault localization has big chunks of 
+possible statements, we could go finer grain to check which 
+of these chunks are more likely to be, but currently it is picked
+at random equally distributed. We are changing that here}
+
 This process is particularly difficult because the search space
 for creating patch candidates is infinite. To create a patch 
 candidate the approach needs to pick a series of edits to apply.
@@ -169,10 +174,17 @@ association rules in the context of multi-edit automatic
 program repair using 10 fold cross validation and associatiotn
 rule coverage metrics.
 
+\item \textbf{Describe Distribution} of statement kinds being
+modified by developers to fix errors in source code. This 
+distribution is then evaluated using 10 fold cross validation
+to analyze the likelihood of correctly choosing what statement
+kinds are modified using historic based data. 
+
 \item \textbf{Lessen the Knowledge Gap} existing in automatic
 program repair approaches which produce single edit patches and
 help narrow the search space to build successful multi-edit 
 patches.
+
 
 \end{itemize}
 
@@ -241,6 +253,8 @@ above show the different debugging areas ("DA").}
 \label{demarcations}
 \end{figure}
 
+\todo{mention C\# somewhere}
+
 We were able to obtain 634 debugging areas in the dataset 
 provided by the MSR Challenge~\cite{msr18challenge}.
 Within these 634 debugging areas, there are 1,251,334
@@ -268,7 +282,52 @@ accounts for node insertitons, deletions, and renaming.
 Once we know which nodes were modified from one \textit{EditEvent}
 to the following, we record their corresponding statement types.
 
-\section{Association Rules}
+\section{Instrument creation}
+
+\subsection{Statement Kind Distribution}
+\label{stmtKindDistribution}
+Table~\ref{corpusDist} shows the top 10 most commonly modified 
+statement kinds
+in the corpus. The "Statement Kind" column shows the name of the 
+Statement kind being modified, the "Instance Precense" column
+shows the number of instances that modify the corresponding
+statement kind, and the "Percentage Presence" column shows 
+how many instances in the context of the entire corpus of 
+1,748 edits found in the debuggin areas modify the corresponding
+statement kind. For example, the first row states that
+an "ExpressionStatement" is modified in 1,272 EditEvent's from the
+1,748 that make up the entire corpus, therefore  it is modified
+in a 72,8\% of the corpus. EditEvent's may modify more than one
+statement kind.
+
+\begin{table}[]
+\centering
+\caption{Distribution of top 10 statement kinds modified by 
+developers when fixing an error in source code. From the 1,748 
+EditEvent's that comprise our corpus we describe how many instances
+modify each of the mentioned statement kinds and their corresponding
+percent of the corpus}
+\label{corpusDist}
+\begin{tabular}{lrr}
+\toprule
+Statement Kind      & Instance Precense & Percentage Presence  \\
+\midrule
+ExpressionStatement & 1272 & 72.8\% \\
+Assignment          & 1186 & 67.8\% \\
+VariableDeclaration & 1071 & 61.3\% \\
+ReturnStatement     & 714  & 40.8\% \\
+IfElseBlock         & 657  & 37.6\% \\
+ForEachLoop         & 334  & 19.1\% \\
+ThrowStatement      & 181  & 10.4\% \\
+TryBlock            & 180  & 10.3\% \\
+UsingBlock          & 103  & 5.9\%  \\
+WhileLoop           & 86   & 4.9\%  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Association Rules}
 \label{assocRules}
 Association rule learning is a machine learning mechanism to identify
 strong relationships between objects in large datasets. 
@@ -291,6 +350,78 @@ Program Repair.
 \section{Evaluation}
 \label{eval}
 
+\subsection{Statement Kind Distribution}
+To evaluate the distribution of the statement kinds being modified
+in the corpus, we compare against an equally distributed counterpart.
+The intuition behind this is that when APR techniques are analyzing 
+which statment to modify, they usually use fault localization 
+mechanisms to narrow down which possible blocks of code might are
+more suspicious than others. These blocks of code are 
+a set of several possible statements, all of which are assigned
+the same likelihood of being selected for modification.
+Ultimately one of them is selected at random as a starting point.
+We believe this selection could be informed based on developer's
+edit history.
+
+Therefore, we evaluate our edit distribution using 10 fold
+cross validation. For each of the folds we perform the following
+tasks:
+We iterate through each of the EditEvent's in the fold. For
+the equally distributed approach, we randomly select one from 
+the possible statement kinds and evaluate if the selected
+statement kinds was modified in the EditEvent.
+For our history-informed approach, we create a distribution
+of the statement kinds being modified from the complement of the fold, 
+and select a statement
+kind bounded by the distribution 
+learned from the complement. The more commonly modified statement
+kinds are more likely to be chosen than the less commonly modified
+statement kinds.
+
+Table~\ref{10FoldEDvsHB} describes the results per each of the folds evaluated.
+In average 
+the Historic-Based approach is able to correctly guess one of  the statement kinds modified
+in each of the instances of the fold being evaluated 49.54\% of the times. The Equally Distributed approach
+in average is able to correctly guess one of the statement kinds being modified in 5.11\% 
+of the evaluated instances of each fold.
+Two sample t-test indicates that the difference between Equally Distributed and Historic-Based approaches are statistically significant (α < 0.05).
+
+
+\begin{table}[]
+\centering
+\caption{10 Fold cross validation performed in the statement kind distribution of the corpus. 
+We compare an Equally Distributed approach against a Historic-Based approach. The former is 
+able to correctly guess one of the modified statement kinds 5.11\% of the time, while the 
+latter correctly guesses it 49.54\% of the time.}
+\label{10FoldEDvsHB}
+\begin{tabular}{l|rr|rr|}
+\toprule
+   &   \multicolumn{2}{c|}{ Equally Distributed}   &   \multicolumn{2}{|c|}{ Historic-Based} \\
+\midrule
+Fold  &   Count & Percentage  &  Count & Percentage  \\
+\midrule
+1&13&(7.39\%) & 72&(40.90\%) \\
+2&4&(2.27\%) & 98&(55.68\%) \\
+3&11&(6.25\%) & 86&(48.86\%) \\
+4&7&(3.98\%) & 84&(47.72\%) \\
+5&10&(5.68\%) & 92&(52.27\%) \\
+6&7&(3.98\%) & 89&(50.57\%) \\
+7&10&(5.68\%) & 92&(52.27\%) \\
+8&8&(4.54\%) & 89&(50.57\%) \\
+9&11&(6.25\%) & 96&(54.54\%) \\
+10&9&(5.11\%) & 74&(42.04\%) \\
+\bottomrule
+Mean &9 & 5.11 & 87.2 & 49.54 \\
+\bottomrule
+Std Dev & 2.45 & 1.39 & 8.15 & 4.43 \\
+\bottomrule
+
+\end{tabular}
+\end{table}
+
+
+
+\subsection{Association Rule Coverage}
 To evaluate the effectiveness
 of the association rules and how these can build the
 necesary edits to create successful patches we first
@@ -456,7 +587,7 @@ written in Java,
 different from our approach which creates association rules for \textbf{statement types} 
 based in the MSR Challenge dataset~\cite{msr18challenge}. Mutation operators help to 
 inform what \textit{action} to perform next, while statement types help to inform what
-\textit{location/object}\todo{pick one of these two words} to modify next. 
+object to modify next. 
 
 \todo{add more related work}
 
