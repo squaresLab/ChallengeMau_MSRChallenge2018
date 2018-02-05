@@ -78,7 +78,7 @@ differences between the SST's associatiated with EditEvent's
 within these debugging regions. 
 We build a distribution of statement kinds with their corresponding
 likelihood of being modified and we validate the usage of this 
-distribution to bound the search space.
+distribution to bound the statement selection.
 We then use Apriori to build association rules with different
 confidence thresholds to describe statement kinds commonly modified
 together for multi-edit patch creation. Finally
@@ -571,7 +571,7 @@ results when using 90\%, 95\% and 100\% confidence thresholds correspondingly.}
 \label{ruleEvaluation}
 \end{figure}
 
-\section{Threats to Validity} \label{threatsVal}
+\section{Threats to Validity / Related Work} \label{threatsVal}
 
 \noindent\textbf{Internal validity:}
 To tackle possible errors in our implementation and experiments, we release our code
@@ -588,8 +588,6 @@ which records the steps developers take while in the software development proces
 This dataset is gathered from a diverse pool of volunteers with different 
 backgrounds and levels of expertise.
 
-\section{Related Work}
-\label{relWork}
 Soto et al.~\cite{Soto18} have created association rules to inform the APR
 process basing their corpus in \textbf{mutation operators} taken from popular Github projects
 written in Java using commit level granularity, 
@@ -598,7 +596,14 @@ based in finer grained C\# code changes~\cite{msr18challenge}. Mutation operator
 inform what \textit{action} to perform next, while statement types help to inform what
 object to modify next. 
 
-\todo{add more related work}
+Martinez and
+Monperrus~\cite{martinez15} study mutation operator incidence across 
+14 projects. Par~\cite{kim2013} describes an analysis of common changes
+applied by humans when fixing errors and templates that can be mined from
+their corpus. HDRepair~\cite{xuan16} 
+uses fix history at a broader level
+to assess patch suitability.
+
 
 \section{Conclusions}
 \label{conclusions}
@@ -611,6 +616,10 @@ syntax trees from each
 of the \textit{EditEvent's} within the debugging regions to create a corpus of 
 events (steps developers take towards fixing an error in the source code).
 
+We create a distribution of commonly modified statement kinds and evaluate
+how a search process bounded by this history can correctly guess (49.54\% of 
+cases) what statement kind is modified to fix an error, as opposed to its
+equally distributed counterpart (5.11\% of the cases).
 We then create association rules to be able to obtain guidelines of what kinds of
 statement to edit together. This lessens an important gap of knowledge existing
 in automatic program repair, which is necessary to restrict the search space of 
@@ -620,25 +629,27 @@ We create these association rules using three different confidence thresholds an
 we evaluate them using 10 fold cross validation. We measure how many of the events
 can be fully, partially, or not covered by the association rules.
 Our findings indicate that 95\% is a better confidence threshold as 
-opposed to 90\% as presented in previous studies~\cite{Soto18}. This is because
-a 95\% threshold is able to maintain a very similar flexibility of rules as a 90\%
-threshold, but it increases the accuracy of the rules created and decreases the 
+opposed to 90\% as presented in previous studies~\cite{Soto18}. 
+We are able to fully cover 93.80\% of the events with a 95\% confidence threshold
+while increasing the accuracy of the rules created and decreasing the 
 number of rules, therefore restricting the search space in automatic program repair.
-Below are shown the top 10 rules created with a 95\% confidence, a full list can be 
-found online\footnote{the link will be made available after double blind
-review since it may uncover the identity of the authors}:
-\begin{itemize}
- \item ReturnStatement \& VariableDeclaration $\implies$ Assignment
- \item IfElseBlock \& VariableDeclaration $\implies$ Assignment
- \item ExpressionStatement \& VariableDeclaration $\implies$ Assignment
- \item VariableDeclaration $\implies$ Assignment
- \item IfElseBlock \& ExpressionStatement $\implies$ Assignment
- \item ExpressionStatement \& ReturnStatement $\implies$ Assignment
- \item IfElseBlock $\implies$ Assignment
- \item ReturnStatement $\implies$ Assignment
- \item IfElseBlock \& Assignment $\implies$ VariableDeclaration
- \item Assignment \& ReturnStatement $\implies$ VariableDeclaration
- \end{itemize}
+
+
+%Below are shown the top 10 rules created with a 95\% confidence, a full list can be 
+%found online\footnote{the link will be made available after double blind
+%review since it may uncover the identity of the authors}:
+%\begin{itemize}
+% \item ReturnStatement \& VariableDeclaration $\implies$ Assignment
+% \item IfElseBlock \& VariableDeclaration $\implies$ Assignment
+% \item ExpressionStatement \& VariableDeclaration $\implies$ Assignment
+% \item VariableDeclaration $\implies$ Assignment
+% \item IfElseBlock \& ExpressionStatement $\implies$ Assignment
+% \item ExpressionStatement \& ReturnStatement $\implies$ Assignment
+% \item IfElseBlock $\implies$ Assignment
+% \item ReturnStatement $\implies$ Assignment
+% \item IfElseBlock \& Assignment $\implies$ VariableDeclaration
+% \item Assignment \& ReturnStatement $\implies$ VariableDeclaration
+% \end{itemize}
 
 
 \begin{acks}
