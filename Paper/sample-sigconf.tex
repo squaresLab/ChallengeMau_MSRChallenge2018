@@ -68,22 +68,20 @@ mechanisms to find areas of code with a spectrum of suspiciousness to
 decide what statements of code to modify. As a result of this, there
 are usually large blocks of code with the same suspiciousness and 
 ultimately one statement is picked at random to be modified.
-We make a higher level granularity analysis based on statement kind
+We make a higher level granularity analysis based on statement kinds
 to find which statements are more likely to be modified than others
-in the process of fixing an error in source code.
+when fixing an error.
 We construct a corpus for analysis by 
 delimiting debugging regions in the provided dataset and 
 recursively analyze the
-differences between the SST's associatiated with EditEvent's
-within these debugging regions. 
+differences between the SST's associatiated with EditEvent's. 
 We build a distribution of statement kinds with their corresponding
 likelihood of being modified and we validate the usage of this 
 distribution to bound the statement selection.
-We then use Apriori to build association rules with different
+We then build association rules with different
 confidence thresholds to describe statement kinds commonly modified
 together for multi-edit patch creation. Finally
-we evaluate the expresive power of the learned rules by
-using 10 fold cross validation and association rule coverage. 
+we evaluate association rule coverage with 10 fold cross validation. 
 
 
 \end{abstract}
@@ -139,7 +137,6 @@ and a mutation operator. The location describes the section
 of the code that will be modified, while the mutation operator
 outlines the type of edit that will be applied to the code.
 
-
 Currently most APR approaches use fault localization mechanisms to 
 narrow down which possible blocks of code are
 more suspicious than others.  
@@ -149,52 +146,53 @@ the same likelihood of being selected for modification.
 Ultimately one of them is selected at random as a starting point 
 following the assumption that all statements within a block
 have the same likelihood of containing the error.
-We believe this selection could be informed based on developer's
-edit history considering the kind of statements most commonly
-modified by developers. We therefore analyze the most commonly 
-modified statement kinds and evaluate if a selection 
-bounded by developer's history of modifications benefits
-the fault localization process.
+We believe this selection could be improved by using
+developer's
+edit history. We therefore analyze the most commonly 
+modified statement kinds and evaluate how the 
+fault localization process can benefit from assigning
+a higher priority to the statements most commonly modified.
 
 After this first fault localization step, APR approaches 
 commonly produce single edits per patch
 candidate, even though multi-edit repairs are vastly common in the 
 development process. One reason why this happens is because
-there has been few research dedicated to analyze multi-edit
-repairs with the goal of restricting the search space of possible edits that 
-can be applied together. This study intents to contribute to
+there are time and hardware constraints in the APR process,
+the search space is infinite, and there are not enough guidelines
+to guide the search.
+This study intents to contribute to
 solve this problem by analyzing  
 the kind of edits that can be applied together to form
-multi-edit patches, therefore diminishing the knowledge
-gap that exists for this common but understudied kind of patches.
+multi-edit patches.
 
 We mined changes performed by developers in the debugging
 process by delimiting debugging regions in the dataset~\cite{msr18challenge} and comparing the simplified syntax
 trees (SST) of consecutive \textit{EditEvent's} using an 
 state-of-the-art tree differencing tool~\cite{Pawlik16Apted}.
 We then gather the statement kinds edited in each of the 
-differences between SST's and apply the well known association
+differences between SST's and apply the association
 rule learning algorithm Apriori~\cite{Agrawal94}
 to obtain relationships that describe what statement kinds
 are edited commonly together. This knowledge helps to 
 bound the search space for automatic program repair approaches
 in the effort of building multi-edit patches.
 
-We evaluate the learned association rules by using a 10 fold
-cross validation mechanism, and analyzing how many of the edits
+We evaluate the learned association rules by 
+analyzing how many of the edits
 in each event can be predicted by the association rules.
 We categorize the level to which the rules can predict edits
 analyzing what sections of the edits are covered by the 
-learned association rules. Finally we analyze
+learned association rules. 
+We use 10 fold
+cross validation to avoid training and testing in the same data.
+Finally we analyze
 the confidence level of the learned rules to a more granular 
 level than performed before in the context of automatic
 program repair. We found that when we use a 95\% confidence
 threshold, we can create association
 rules that maintain the same flexibility as previous
-studies with lower confidence thersholds, but increase
-the accuracy of the created rules.
-By performing this change, we also
-decrease the number of rules learned therefore
+studies with lower confidence thersholds, but increases
+the accuracy of the created rules and decreases the number of rules
 delimiting even more the search space of potential edits
 performed by APR approaches to obtain successful patches.
 
@@ -212,8 +210,8 @@ trying to fix an error in source code.
 \item \textbf{Higher Granularity Evaluation} 
 of confidence thresholds when creating
 association rules in the context of multi-edit automatic
-program repair using 10 fold cross validation and associatiotn
-rule coverage metrics. 
+program repair using association rule coverage with 
+10 fold cross validation.
 
 \end{itemize}
 
@@ -240,7 +238,9 @@ was not aborted), but one or more test cases failed.
 The delimitation ends at a point in time $\epsilon $ where $ \epsilon > \delta$ 
 and where all test cases were ran and all test cases passed.
 Figure~\ref{demarcations} shows an example of a time line
-with only the \textit{TestRunEvent's}. "P" represents a case
+with only the \textit{TestRunEvent's}. The 
+horizontal arrow represents a timeline showing
+the events when a test suite was executed. "P" represents a case
 where all test cases passed and "F" represents a case where one
 or more test cases failed. The \texttt{debugging areas} are shown by
 the brackets above with the "DA" initials. 
@@ -258,11 +258,9 @@ all test cases pass.
 
 \begin{figure}[h]
 \caption{Example of the process used to obtain the demarcation of
-debugging areas. The horizontal arrow represents a timeline showing
-the events when a test suite was executed. "P" 
-represents an event where all test cases in the test suite
-passed, "F" is used when one or more tests failed. The horizontal brackets
-above show the different debugging areas ("DA").}
+debugging areas. Events where all test cases pass (P) and
+events where one or more tests fail (F) are analyzed to create
+debugging areas (DA).}
 \centering
 \includegraphics[width=0.5\textwidth]{images/demarcations.png}
 \label{demarcations}
@@ -316,10 +314,7 @@ statement kind.
 \begin{table}[]
 \centering
 \caption{Distribution of top 10 statement kinds modified by 
-developers when fixing an error in source code. From the 1,748 
-EditEvent's that comprise our corpus we describe how many instances
-modify each of the mentioned statement kinds and their corresponding
-percent of the corpus}
+developers when fixing an error in source code. }
 \label{corpusDist}
 \begin{tabular}{lrr}
 \toprule
@@ -338,7 +333,6 @@ WhileLoop           & 86   & 4.9\%  \\
 \bottomrule
 \end{tabular}
 \end{table}
-
 
 \subsection{Association Rules}
 \label{assocRules}
@@ -363,7 +357,7 @@ Program Repair.
 \section{Evaluation}
 \label{eval}
 
-\subsection{Statement Kind Distribution}
+\subsection{Historic-Based Statement Kind Selection}
 To evaluate the distribution of the statement kinds being modified
 in the corpus, we compare against an equally distributed counterpart.
 This simulates the process being used by most current APR approaches
@@ -372,7 +366,8 @@ mechanism and randomly selecting an statement from the most
 suspicious block.
 
 We use 10 fold
-cross validation to evaluate a selection bounded by the distribution
+cross validation to avoid training and testing in the same data
+when evaluating a selection bounded by the distribution
 learned. For each of the folds we perform the following
 tasks:
 We iterate through each of the EditEvent's in the fold. For
@@ -398,14 +393,11 @@ Two sample t-test indicates that the difference between Equally Distributed and 
 
 \begin{table}[]
 \centering
-\caption{10 Fold cross validation performed in the statement kind distribution of the corpus. 
-We compare an Equally Distributed approach against a Historic-Based approach. The former is 
-able to correctly guess one of the modified statement kinds 5.11\% of the time, while the 
-latter correctly guesses it 49.54\% of the time.}
+\caption{Evaluation of modified statement kind selection (Equally distributed vs Historic-based) with 10 fold cross validation.}
 \label{10FoldEDvsHB}
-\begin{tabular}{l|rr|rr|}
+\begin{tabular}{l|rr|rr}
 \toprule
-   &   \multicolumn{2}{c|}{ Equally Distributed}   &   \multicolumn{2}{|c|}{ Historic-Based} \\
+   &   \multicolumn{2}{c|}{ Equally Distributed}   &   \multicolumn{2}{|c}{ Historic-Based} \\
 \midrule
 Fold  &   Count & Percentage  &  Count & Percentage  \\
 \midrule
@@ -466,18 +458,6 @@ from the remaining nine folds of the corpus. In our example: Rule~1
 indicates that when an Assignment and a ForLoop have been modified,
 the next step would be to modify an IfElseBlock.
 
-In this example, Event~1 is fully covered since Rule~1 covers all
-the edits in the event. For Event~2, Rule~1 does not apply, even though
-Event~2 contains the antecedent of Rule~1, it does not contain the 
-concequent, therefore the rule would not be successfully applied in a
-real-life context. Rule~2 does apply to partially cover the latter two
-edits of Event~2, but the first edit (Assignment) would not be covered
-therefore Event~2 is partially covered. Finally Event~3 is not covered,
-event when some of its edits are contained in the antecedent of the rules,
-there is no rule that would successfully predict the behavior of this 
-event. 
-
-%There are 84 stmt kinds in this corpus
 
 \begin{table}[ht]
   \centering
@@ -499,6 +479,20 @@ event.
 
 }
 \end{table}
+
+In this example, Event~1 is fully covered since Rule~1 covers all
+the edits in the event. For Event~2, Rule~1 does not apply, even though
+Event~2 contains the antecedent of Rule~1, it does not contain the 
+concequent, therefore the rule would not be successfully applied in a
+real-life context. Rule~2 does apply to partially cover the latter two
+edits of Event~2, but the first edit (Assignment) would not be covered
+therefore Event~2 is partially covered. Finally Event~3 is not covered,
+event when some of its edits are contained in the antecedent of the rules,
+there is no rule that would successfully predict the behavior of this 
+event. 
+
+%There are 84 stmt kinds in this corpus
+
 
 Finally we performed this analysis at 3 different confidence thresholds
 (90\%, 95\%, 100\%) to compare the accuracy of the rules against the 
