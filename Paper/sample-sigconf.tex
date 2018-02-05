@@ -31,7 +31,7 @@
 
 
 \begin{document}
-\title{Common Statement Kind Changes and their Application in Multi-Edit Automatic Program Repair}
+\title{Common Statement Kind Changes and their Application in Automatic Program Repair}
 %\titlenote{Produces the permission block, and
 %  copyright information}
 %\subtitle{Extended Abstract}
@@ -63,7 +63,29 @@
 
 
 \begin{abstract}
-\todo{Insert abstract}
+Automatic Program Repair approaches usually depend on fault localization
+mechanisms to find areas of code with a spectrum of suspiciousness to 
+decide what statements of code to modify. As a result of this, there
+are usually large blocks of code with the same suspiciousness and 
+ultimately one statement is picked at random to be modified.
+We make a higher level granularity analysis based on statement kind
+to find which statements are more likely to be modified than others
+in the process of fixing an error in source code.
+We construct a corpus for analysis by 
+delimiting debugging regions in the provided dataset and 
+recursively analyze the
+differences between the SST's associatiated with EditEvent's
+within these debugging regions. 
+We build a distribution of statement kinds with their corresponding
+likelihood of being modified and we validate the usage of this 
+distribution to bound the search space.
+We then use Apriori to build association rules with different
+confidence thresholds to describe statement kinds commonly modified
+together for multi-edit patch creation. Finally
+we evaluate the expresive power of the learned rules by
+using 10 fold cross validation and association rule coverage. 
+
+
 \end{abstract}
 
 %
@@ -109,11 +131,6 @@ called patch candidates, and \emph{validate} these patch
 candidates against the test suite with the intent of finding 
 a patch candidate that passess all test cases in the test suite.
 
-\todo{say something like, usually fault localization has big chunks of 
-possible statements, we could go finer grain to check which 
-of these chunks are more likely to be, but currently it is picked
-at random equally distributed. We are changing that here}
-
 This process is particularly difficult because the search space
 for creating patch candidates is infinite. To create a patch 
 candidate the approach needs to pick a series of edits to apply.
@@ -121,7 +138,26 @@ An edit consists of a location in the source code,
 and a mutation operator. The location describes the section
 of the code that will be modified, while the mutation operator
 outlines the type of edit that will be applied to the code.
-Currently most APR approaches produce single edits per patch
+
+
+Currently most APR approaches use fault localization mechanisms to 
+narrow down which possible blocks of code are
+more suspicious than others.  
+These blocks of code are 
+a set of several possible statements, all of which are assigned
+the same likelihood of being selected for modification.
+Ultimately one of them is selected at random as a starting point 
+following the assumption that all statements within a block
+have the same likelihood of containing the error.
+We believe this selection could be informed based on developer's
+edit history considering the kind of statements most commonly
+modified by developers. We therefore analyze the most commonly 
+modified statement kinds and evaluate if a selection 
+bounded by developer's history of modifications benefits
+the fault localization process.
+
+After this first fault localization step, APR approaches 
+commonly produce single edits per patch
 candidate, even though multi-edit repairs are vastly common in the 
 development process. One reason why this happens is because
 there has been few research dedicated to analyze multi-edit
@@ -164,7 +200,12 @@ performed by APR approaches to obtain successful patches.
 
 The main contributions of this paper are the following:
 \begin{itemize}
-\item \textbf{Association rules} that describe the behavior
+\item \textbf{Describe and Evaluate Distribution} of statement kinds being
+modified by developers to fix errors in source code by
+analyzing the likelihood of correctly choosing what statement
+kinds are modified using historic-based data.
+
+\item \textbf{Create Association Rules} that describe the behavior
 of statement kinds that developers modify commonly together when
 trying to fix an error in source code.  
 
@@ -172,35 +213,9 @@ trying to fix an error in source code.
 of confidence thresholds when creating
 association rules in the context of multi-edit automatic
 program repair using 10 fold cross validation and associatiotn
-rule coverage metrics.
-
-\item \textbf{Describe Distribution} of statement kinds being
-modified by developers to fix errors in source code. This 
-distribution is then evaluated using 10 fold cross validation
-to analyze the likelihood of correctly choosing what statement
-kinds are modified using historic based data. 
-
-\item \textbf{Lessen the Knowledge Gap} existing in automatic
-program repair approaches which produce single edit patches and
-help narrow the search space to build successful multi-edit 
-patches.
-
+rule coverage metrics. 
 
 \end{itemize}
-
-The rest of this paper proceeds as follows:
-
-First we describe how the corpus was constructed by 
-delimiting debugging regions in the provided dataset(Section~\ref{delimitDebugRegions}) and recursively analyzing the
-differences between the SST's associatiated with EditEvent's
-withint the debugging regions(Section~\ref{sstDiff}). 
-We then use Apriori to build association rules with different
-confidence thresholds(Section~\ref{assocRules}). Finally
-we evaluate how expresive power of the learned rules by
-using 10 fold cross validation and association rule coverage
-(Section~\ref{eval}). Finally we have Threats to Validity and 
-Related Work sections (\ref{threatsVal} and \ref{relWork} 
-accordingly), and a Conclusion section (\ref{conclusions}).
 
 \section{Gathering the Corpus}
 \subsection{Delimiting Debugging Regions}
@@ -252,8 +267,6 @@ above show the different debugging areas ("DA").}
 \includegraphics[width=0.5\textwidth]{images/demarcations.png}
 \label{demarcations}
 \end{figure}
-
-\todo{mention C\# somewhere}
 
 We were able to obtain 634 debugging areas in the dataset 
 provided by the MSR Challenge~\cite{msr18challenge}.
@@ -353,18 +366,14 @@ Program Repair.
 \subsection{Statement Kind Distribution}
 To evaluate the distribution of the statement kinds being modified
 in the corpus, we compare against an equally distributed counterpart.
-The intuition behind this is that when APR techniques are analyzing 
-which statment to modify, they usually use fault localization 
-mechanisms to narrow down which possible blocks of code might are
-more suspicious than others. These blocks of code are 
-a set of several possible statements, all of which are assigned
-the same likelihood of being selected for modification.
-Ultimately one of them is selected at random as a starting point.
-We believe this selection could be informed based on developer's
-edit history.
+This simulates the process being used by most current APR approaches
+where blocks of code are analyzed using a fault localization 
+mechanism and randomly selecting an statement from the most
+suspicious block.
 
-Therefore, we evaluate our edit distribution using 10 fold
-cross validation. For each of the folds we perform the following
+We use 10 fold
+cross validation to evaluate a selection bounded by the distribution
+learned. For each of the folds we perform the following
 tasks:
 We iterate through each of the EditEvent's in the fold. For
 the equally distributed approach, we randomly select one from 
@@ -583,9 +592,9 @@ backgrounds and levels of expertise.
 \label{relWork}
 Soto et al.~\cite{Soto18} have created association rules to inform the APR
 process basing their corpus in \textbf{mutation operators} taken from popular Github projects
-written in Java, 
+written in Java using commit level granularity, 
 different from our approach which creates association rules for \textbf{statement types} 
-based in the MSR Challenge dataset~\cite{msr18challenge}. Mutation operators help to 
+based in finer grained C\# code changes~\cite{msr18challenge}. Mutation operators help to 
 inform what \textit{action} to perform next, while statement types help to inform what
 object to modify next. 
 
