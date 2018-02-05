@@ -103,10 +103,6 @@ we evaluate association rule coverage with 10 fold cross validation.
 
 \ccsdesc[100]{Software and its engineering~Software evolution}
 
-
-
-
-
 \maketitle
 
 \section{Introduction}
@@ -115,7 +111,7 @@ the software development process~\cite{Weiss07,Tassey02,Britton13}.
 In the last decade there has been increasing attention to 
 the concept of automatic program repair (APR). These are a 
 series of approaches whose intent is to repair software
-automatically (e.g.~\cite{legoues12,kim2013,Weimer13,long15SPR,long16proph,debroy10,perkins09,wei10}).
+automatically (e.g.~\cite{legoues12,kim2013,Weimer13,long16proph}).
 A well-known family of techniques follows the \emph{generate-and-validate}
 approach (e.g.~\cite{legoues12,kim2013,Qi13TrpAutoR,xuan16}), 
 which take as input a buggy program and a test suite containing
@@ -453,13 +449,12 @@ the next step is to modify an IfElseBlock.
 2 & Assignment; ForLoop; VariableDeclaration\\  
 3 & Assignment; ForLoop;  ReturnStmt \\
 \midrule
- \multicolumn{2}{c}{Rules} \\                     
+ \multicolumn{2}{c}{Association Rules} \\                     
 \midrule
 1 & Assignment $\wedge$ ForLoop $\rightarrow$ IfElseBlock \\  
 2 & ForLoop $\rightarrow$ VariableDeclaration \\   
 \bottomrule
 \end{tabular}
-
 }
 \end{table}
 
