@@ -192,21 +192,16 @@ modified by developers when fixing errors in source code.
 
 \item We \textbf{evaluate
 the selection process} of statement kinds to be modified
-to fix source code errors, using history-based data, compared against
-an equally distributed random approach.
+to fix source code errors, using history-based data (49.54\% correctly guessed), compared against
+an equally distributed random approach (5.11\% correctly guessed).
 
 \item We \textbf{create association rules} that describe the behavior
-of statement kinds that developers modify commonly together.
-
-\item We provide a \textbf{higher granularity evaluation} 
-of confidence thresholds when creating
-association rules in the context of APR.\todo{I'm not sure what this means,
-  perhaps a rephrase?}
+of statement kinds that developers modify commonly together. 
+We evaluate the expressive power of the learned rules, we find
+that we can fully cover 93.8\% of the held-out events while maintaining
+95\% confidence.
 
 \end{itemize}
-
-\todo{On some or all of teh above: what are the results?  You describe what we
-  did, but not what we learn.}
 
 \section{Creating the Corpus}
 We collect a corpus of events based in modifications 
@@ -232,10 +227,10 @@ and where all test cases were ran and passed.
 Figure~\ref{demarcations} shows an example of a time line
 with only the \textit{TestRunEvent's}. The 
 horizontal arrow represents a timeline in chronological order showing
-the events when a test suite was executed. "P" represents a case
-where all test cases passed and "F" represents a case where one
+the events when a test suite was executed. ``P" represents a case
+where all test cases passed and ``F" represents a case where one
 or more test cases failed. The \texttt{debugging areas} are shown by
-the brackets above with the "DA" initials. 
+the brackets above with the ``DA" initials. 
 It is worth noticing
 that between delimiting points $\delta$ and $\epsilon$ there can be 
 several \textit{TestRunEvent's} with failing test cases, meaning
