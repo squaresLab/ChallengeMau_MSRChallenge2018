@@ -144,9 +144,9 @@ more than one edit are commonly found in the real world and have
 been vastly understudied. The need for mechanisms that help guide
 the search space for multi-edit patches keeps growing.
 
-There is evidence that states that not all statements are modified
-equally, and approaches that are informed in human behavior produce
-better quality patches~\cite{kim2013,Soto18} 
+Evidence shows that not all statements are modified
+equally, and there are benefits from using history-based
+data~\cite{kim2013,Soto18}. 
 Therefore, we first analyze the most commonly 
 modified statement kinds and evaluate how the 
 fault localization process can benefit from assigning
@@ -155,32 +155,28 @@ Second, we create association rules to describe relationships
 between statement kinds commonly modified together to inform
 the creation of multi-edit patch candidates. 
 
-We use the dataset provided by the MSR Challenge~\cite{msr18challenge}
-which describes the actions performed
+The MSR Challenge dataset~\cite{msr18challenge}
+describes the actions performed
 by developers when coding.
-We mined changes performed by developers in the debugging
-process by delimiting debugging regions in the 
-dataset~\cite{msr18challenge} and comparing the simplified syntax
+We mined changes performed in the debugging
+process by delimiting debugging regions
+and comparing the simplified syntax
 trees (SST) of consecutive \textit{EditEvent's} using an 
 state-of-the-art tree differencing tool~\cite{Pawlik16Apted}.
-We then gather the statement kinds edited when
-differencing SST's and apply the association
-rule learning algorithm Apriori~\cite{Agrawal94}
+We then apply the association
+rule learning algorithm Apriori~\cite{Agrawal94} to this corpus
 to obtain relationships that describe what statement kinds
-are edited commonly together. This knowledge helps to 
-bound the search space for automatic program repair approaches
-in the effort of building multi-edit patches.
+are edited commonly together.
 
 We evaluate the level to which the rules can predict edits
-by analyzing what sections of the edits are covered by the 
+by analyzing what sections of the events are covered by the 
 learned association rules. 
 Finally we analyze
-the confidence level of the learned rules to a more granular 
-level than performed before in the context of automatic
-program repair. We found that when we use a 95\% confidence
+the confidence level of the learned rules. 
+We found that when we use a 95\% confidence
 threshold, we can create association
-rules that maintain the same flexibility as previous
-studies with lower confidence thersholds\cite{Soto18}, but increases
+rules that maintain the same flexibility as 
+lower confidence thersholds, but increases
 the accuracy of the created rules and decreases the number of rules
 delimiting even more the search space of potential edits
 performed by APR approaches to obtain successful patches.
@@ -206,9 +202,12 @@ that we can fully cover 93.8\% of the held-out events while maintaining
 \section{Creating the Corpus}
 
 We collect a corpus of events based in modifications 
-developers perform when fixing an error. We then
-use this corpus to create a distribution of statement
-kinds modified and association rules.\todo{reference the challenge corpus in a citation}
+developers perform when fixing an error from the MSR Challenge 
+dataset~\cite{msr18challenge}. We then
+use this corpus to find differences between consecutive events
+and their corresponding Simplified Syntax Tree's (a snapshot of
+the source code when the event took place) to create a distribution 
+of statement kinds modified and association rules.
 
 \subsection{Delimiting Debugging Regions}
 \label{delimitDebugRegions}
@@ -219,17 +218,16 @@ process is identifying periods during which a
 developer is trying to fix a bug.
 We delimit the debugging regions by starting at a point
 in time $\delta$ where a \textit{TestRunEvent} is triggered and 
-all test cases were run (i.e., test case execution
+all test cases were run (test case execution
 was not aborted) but one or more test cases failed, while in the 
 previous \textit{TestRunEvent}, all tests passed.
-The delimitation ends at a point in time $\epsilon $ where $ \epsilon > \delta$ 
-and where all test cases were ran and passed.\todo{and another test run event
-  happened first?}
+The delimitation ends at a later point in time $\epsilon $ where 
+$\epsilon $ is the closest \textit{TestRunEvent} later in
+chronological order
+where all test cases were ran and passed.
 
 Figure~\ref{demarcations} shows an example of a time line
-with only the \textit{TestRunEvent}s shown. The 
-horizontal arrow represents a timeline showing
-the events during which a test suite was executed. ``P" represents a case
+with only the \textit{TestRunEvent}s shown. ``P" represents a case
 where all test cases passed; ``F" represents a case where one
 or more test cases failed. The \texttt{debugging areas} are shown by
 the brackets demarcated with ``DA". 
@@ -252,11 +250,9 @@ debugging areas (DA).}
 We identified 634 debugging sequences in the dataset 
 provided by the MSR Challenge~\cite{msr18challenge}.
 Within these debugging sequences, there are 1,251,334
-different\todo{unique?} events, from which 1,748 are \textit{EditEvent's}
+unique events, from which 1,748 are \textit{EditEvent's}
 that have associated a not-unknown Contexts, and therefore 
-contain a valid Simplified Syntax Tree.\todo{What is a Simplified
-  Syntax Tree?  Introduce this in the front part of the section, overviewing the
-approach} These \textit{EditEvent's} 
+contain a valid Simplified Syntax Tree. These \textit{EditEvent's} 
 are our primary subject of analysis.
 
 \subsection{Simplified Syntax Tree Differencing}
@@ -281,17 +277,15 @@ in the corpus.  EditEvent's may modify more than one
 statement kind, therefore the sum of these distribution
 does not sum to 100\%.
 From our 1,748 events, the most commonly modified statement
-kinds are ExpressionStatements, modified in 1,272  (72.8\%) corpus events,
-followed by Assignment's modified in 1,186 
-events (67.8\%). VariableDeclaration's are modified in 1,071
-events (61.3\%) and ReturnStatement's are modified in 714
+kinds are \texttt{ExpressionStatement}'s, modified in 1,272 (72.8\%) 
+corpus events,
+followed by \texttt{Assignment}'s modified in 1,186 
+events (67.8\%). \texttt{VariableDeclaration}'s are modified in 1,071
+events (61.3\%) and \texttt{ReturnStatement}'s in 714
 events (40.8\%).\footnote{The full list of Statement kind
 distrubtion of the corpus is located in the anonymouos folder 
-http://bit.ly/2EMBeh3} \todo{Takeaway from this?  Implication for APR?  One sentence summary of the
-  high level point.}
-EditEvent's may modify more than one
-statement kind, therefore the sum of these distribution
-does not sum to 100\%.
+http://bit.ly/2EMBeh3} This confirms our initial hypothesis that
+not all statement kinds are modified equally.
 
 
 %Table~\ref{corpusDist} shows the top 10 most commonly modified 
@@ -344,7 +338,6 @@ account \textit{Confidence} (a measure of the likelihood
 of the consequent section being present given the 
 antecedent) and \textit{Support} (how frequently the set of
 statement types in the rule occurs in the corpus).
-
 Using our corpus of edits and their associated statement types, 
 we create association rules that provide guidelines
 for what statement types are modified together commonly. 
@@ -364,16 +357,16 @@ cover.
 To evaluate the distribution of the statement kinds modified
 in the corpus, we compare against an equally distributed counterpart.
 This simulates the process being used by most current APR approaches
-where blocks of code are analyzed using a fault localization 
-\todo{This sentence is not grammatical, please fix.}
-mechanism and randomly selecting an statement from the most
+where code is analyzed, using a fault localization 
+mechanism, and an statement is randomly selected from the most
 suspicious block.
 
+We evaluate the process of selecting an statement kind informed by 
+history-based data and check if it correctly predicts held-out 
+instances.
 We use 10 fold
-cross validation to avoid training and testing on the same data
-when evaluating a selection bounded by the distribution
-\todo{this sentence is not parsing for me, I'm afraid.  Perhaps simplify it.}
-learned. For each of the folds, we
+cross validation to avoid training and testing on the same data.
+For each fold, we
 iterate through each EditEvent. For
 the equally distributed approach, we randomly select one from 
 all possible statement kinds and check if the selected
@@ -432,7 +425,8 @@ We next evaluate the effectiveness
 of the association rules and their potential for use in building the
 necesary edits to create successful multi-edit patches. We first
 remove from our corpus the instances where the developers
-performed a single edit.\todo{how many?} This is because association rules
+performed a single edit. This removed 578 instances from the initial 1,748.
+We perform this restriction because association rules
 by definition require at least two elements: an antecedent
 and a consequent. 
 
@@ -453,15 +447,13 @@ the edits in an event (the event is \emph{not covered}).
 We show an example for further understanding of the coverage concept.
 Table~\ref{rulesandinstances} shows three events. In 
 our example Event~1 describes an event
-where the developer modified an Assignment, a ForLoop and an IfElseBlock.
+where the developer modified an \texttt{Assignment}, 
+a \texttt{ForLoop} and an \texttt{IfElseBlock}.
 The rules shown in Table~\ref{rulesandinstances} represent rules created
 from the remaining nine folds of the corpus. In our example: Rule~1 
-indicates that when an Assignment and a ForLoop have been modified,
-the next step is to modify an \texttt{IfElseBlock}.\todo{I added the tt tag
-  around the IfElseBlock; please do the same around other instances of statement
-  kind descriptions througout (like assignment, forloop, etc).  Use typesetting
-  to help your reader parse.}
-
+indicates that when an \texttt{Assignment} and a \texttt{ForLoop} 
+have been modified,
+the next step is to modify an \texttt{IfElseBlock}.
 
 \begin{table}[ht]
   \centering
@@ -562,11 +554,7 @@ results when using 90\%, 95\% and 100\% confidence thresholds correspondingly.}
 \label{ruleEvaluation}
 \end{figure}
 
-\section{Threats to Validity / Related Work} \label{threatsVal}
-
-\todo{You can't just munge threats and related work together.  They're unrelated.  Put threats in a
-  subsection in the previous section and related work in its own section.}
-
+\subsection{Threats to Validity}
 \noindent\textbf{Internal validity:}
 To tackle possible errors in our implementation and experiments, we release our code
 to be reviewed by the other researchers.\footnote{All instruments
@@ -584,7 +572,8 @@ which records the steps developers take while in the software development proces
 This dataset is gathered from a diverse pool of volunteers with different 
 backgrounds and levels of expertise.
 
-\noindent\textbf{Related Work:} 
+
+\section{ Related Work} 
 Soto et al.~\cite{Soto18} have created association rules to inform the APR
 process basing their corpus in \textbf{mutation operators} taken from popular Github projects
 written in Java using commit level granularity, 
@@ -592,18 +581,21 @@ different from our approach which creates association rules for \textbf{statemen
 based in finer grained C\# code changes~\cite{msr18challenge}. Mutation operators help to 
 inform what \textit{action} to perform next, while statement types help to inform what
 object to modify next. 
-Martinez and
-Monperrus~\cite{martinez15} study mutation operator incidence across 
-14 projects. Par~\cite{kim2013} describes an analysis of common changes
+Par~\cite{kim2013} describes an analysis of common changes
 applied by humans when fixing errors and templates that can be mined from
 their corpus. HDRepair~\cite{xuan16} 
 uses fix history at a broader level
 to assess patch suitability.
-\todo{Add the paper from ...someone and Su on empirical study of debugging (ICSE
-  '15).  Also, you very very obviously need to cite Prophet.  We're obviously
-  not proposing a new APR technqiue (which you should say), but you definitely
-  need to cite prophet.  Check your own SANER paper, there are at least a couple
-of very related pieces of work to add.}
+Zhong and Su~\cite{zhong15} conduct an empirical study on six popular Java 
+projects anallyzing the incidence of three mutation operators. 
+Martinez and
+Monperrus~\cite{martinez15} study mutation operator incidence across 
+14 projects.
+Prophet~\cite{long16proph} creates a
+probabilistic model from 
+the history of 8 different projects to rank candidate
+patches.
+
 
 \section{Conclusions}
 \label{conclusions}
@@ -620,7 +612,7 @@ how a search process bounded by this history can correctly guess (49.54\% of
 cases) what statement kind is modified to fix an error, as opposed to its
 equally distributed counterpart (5.11\% of the cases).
 
-We then create association rules toprovide guidelines of what kinds of
+We then create association rules to provide guidelines of what kinds of
 statement to edit together to create successful multi-edit patches. 
 We measure how many of the events
 can be fully, partially, or not covered by the association rules; we find that
@@ -628,8 +620,10 @@ can be fully, partially, or not covered by the association rules; we find that
 We are able to fully cover 93.80\% of the events with a 95\% confidence threshold
 which increases the accuracy of the rules created and decreases the 
 number of rules, therefore helping delimit the vast search space 
-in automatic program repair.\todo{Sentence about future work, wherein we will
-  presumably use these models to inform multi-edit repair.}
+in automatic program repair. These findings can be used to guide the 
+creation of multi-edit patches in an APR context therefore delimiting
+the vast search space and providing guidelines for properly selecting
+statement kinds to modify based in the history of developer changes.
 
 
 %Below are shown the top 10 rules created with a 95\% confidence, a full list can be 
