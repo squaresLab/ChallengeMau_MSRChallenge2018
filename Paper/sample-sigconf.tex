@@ -63,12 +63,10 @@
 
 
 \begin{abstract}
-Automatic Program Repair approaches usually depend on fault localization
-mechanisms to 
-decide what statements of code to modify. This results in 
-large blocks of code with the same suspiciousness and 
-ultimately one statement being picked at random to be modified.
-We make a higher level granularity analysis based on statement kinds
+The search space for automatic program repair approaches 
+is vast and the search for mechanisms to help restrict this 
+search are increasing.
+We make a granular analysis based on statement kinds
 to find which statements are more likely to be modified than others
 when fixing an error.
 We construct a corpus for analysis by 
@@ -81,8 +79,9 @@ distribution to guide the statement selection.
 We then build association rules with different
 confidence thresholds to describe statement kinds commonly modified
 together for multi-edit patch creation. Finally
-we evaluate association rule coverage with 10 fold cross validation. 
-
+we evaluate association rule coverage over a held out test set
+and find that when using a 95\% confidence threshold we
+can create less and more accurate rules that fully cover 93.8\% of the testing instances.
 
 \end{abstract}
 
@@ -150,14 +149,9 @@ are edited commonly together. This knowledge helps to
 bound the search space for automatic program repair approaches
 in the effort of building multi-edit patches.
 
-We evaluate the learned association rules by 
-analyzing how many of the edits
-in each event can be predicted by the association rules.
-We categorize the level to which the rules can predict edits
-analyzing what sections of the edits are covered by the 
+We evaluate the level to which the rules can predict edits
+by analyzing what sections of the edits are covered by the 
 learned association rules. 
-We use 10 fold
-cross validation to avoid training and testing in the same data.
 Finally we analyze
 the confidence level of the learned rules to a more granular 
 level than performed before in the context of automatic
@@ -367,7 +361,7 @@ statement kinds.
 
 Table~\ref{10FoldEDvsHB} describes the results per each of the folds evaluated.
 In average 
-the History-based approach is able to correctly guess one of  the statement kinds modified
+the History-based approach is able to correctly guess one of the statement kinds modified
 in each of the instances of the fold being evaluated 49.54\% of the times. The Equally distributed approach
 in average is able to correctly guess one of the statement kinds being modified in 5.11\% 
 of the evaluated instances of each fold.
@@ -376,7 +370,7 @@ Two sample t-test indicates that the difference between Equally distributed and 
 
 \begin{table}[]
 \centering
-\caption{Evaluation of modified statement kind selection (Equally distributed vs History-based) with 10 fold cross validation.}
+\caption{Evaluation of modified statement kind selection (Equally distributed vs History-based).}
 \label{10FoldEDvsHB}
 \begin{tabular}{l|rr|rr}
 \toprule
@@ -415,7 +409,7 @@ by definition require at least two elements: an antecedent
 and a consequent. 
 
 We then analyze how often the association rules can build the 
-modifications in the events, we use 10 fold cross validation.
+modifications in the events by using rule coverage. We use 10 fold cross validation to avoid training and testing in overlapping data.
 First, we divide our corpus into 10 folds.
 For each of the folds we perform the following actions:
 the selected fold is used as testing data, and the
@@ -488,7 +482,8 @@ discretely in intervals of 10 percentage points~\cite{Soto18}.
 In this study we take it one step further and analyze the midpoint between 90\%
 confidence and 100\% confidence.
 For each confidence
-threshold, we evaluated association rule coverage performing
+threshold, we evaluated association rule coverage on a held out
+dataset. For this we perform
 a standard 10 fold cross validation process. Finally, we aggregate the results
 from all folds.
 
@@ -522,8 +517,7 @@ the search space by restricting it to a smaller number of more accurate rules.
 \begin{figure}[h]
 \caption{The wide bars are described by the left Y axis. This represents
 the percentage of instances covered
-fully, partially or not by the association rules when using 10 fold
-cross validation (higher full coverage is better). 
+fully, partially or not by the association rules (higher full coverage is better). 
 The thin bars are described by the right Y axis.
 This represents the number of rules created for each confidence threshold 
 (lower is better).
@@ -541,8 +535,7 @@ To tackle possible errors in our implementation and experiments, we release our 
 to be reviewed by the other researchers.\footnote{All instruments
 and source code can be found in the anonymouos folder 
 https://www.dropbox.com/sh/lei59ywj1ok7gfk/AACc7JyJ-BcCa9-Kt1BqzGWja?dl=0} 
-We also use 10-fold cross validation 
-when evaluating the association rules
+We also use 10 fold cross validation 
 to reduce the risk of training and testing on the same data.  
 
 \noindent\textbf{External validity:} 
