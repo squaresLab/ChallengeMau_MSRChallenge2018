@@ -197,35 +197,36 @@ association rules in the context of APR.\todo{I'm not sure what this means,
   did, but not what we learn.}
 
 \section{Creating the Corpus}
+
 We collect a corpus of events based in modifications 
 developers perform when fixing an error. We then
 use this corpus to create a distribution of statement
-kinds modified and association rules.
+kinds modified and association rules.\todo{reference the challenge corpus in a citation}
 
 \subsection{Delimiting Debugging Regions}
 \label{delimitDebugRegions}
 
 
 The first step towards analyzing the debugging
-process is to be able to tell when
-developers are trying to fix a bug.
+process is identifying periods during which a 
+developer is trying to fix a bug.
 We delimit the debugging regions by starting at a point
 in time $\delta$ where a \textit{TestRunEvent} is triggered and 
-all test cases were ran (the execution of test cases
-was not aborted) but one or more test cases failed, and in the 
-previous \textit{TestRunEvent} all tests passed.
+all test cases were run (i.e., test case execution
+was not aborted) but one or more test cases failed, while in the 
+previous \textit{TestRunEvent}, all tests passed.
 The delimitation ends at a point in time $\epsilon $ where $ \epsilon > \delta$ 
-and where all test cases were ran and passed.
+and where all test cases were ran and passed.\todo{and another test run event
+  happened first?}
 
 Figure~\ref{demarcations} shows an example of a time line
-with only the \textit{TestRunEvent's}. The 
-horizontal arrow represents a timeline in chronological order showing
-the events when a test suite was executed. "P" represents a case
-where all test cases passed and "F" represents a case where one
+with only the \textit{TestRunEvent}s shown. The 
+horizontal arrow represents a timeline showing
+the events during which a test suite was executed. ``P" represents a case
+where all test cases passed; ``F" represents a case where one
 or more test cases failed. The \texttt{debugging areas} are shown by
-the brackets above with the "DA" initials. 
-It is worth noticing
-that between delimiting points $\delta$ and $\epsilon$ there can be 
+the brackets demarcated with ``DA". 
+Note that between delimiting points $\delta$ and $\epsilon$ there can be 
 several \textit{TestRunEvent's} with failing test cases, meaning
 that the developer is actively debugging the error pointed out
 by the failing test cases, but still hasn't been able to make
@@ -241,47 +242,47 @@ debugging areas (DA).}
 \label{demarcations}
 \end{figure}
 
-We were able to obtain 634 debugging areas in the dataset 
+We identified 634 debugging sequences in the dataset 
 provided by the MSR Challenge~\cite{msr18challenge}.
-Within these debugging areas, there are 1,251,334
-different events, from which 1,748 are \textit{EditEvent's}
+Within these debugging sequences, there are 1,251,334
+different\todo{unique?} events, from which 1,748 are \textit{EditEvent's}
 that have associated a not-unknown Contexts, and therefore 
-contain a valid Simplified Syntax Tree. These \textit{EditEvent's} 
-will be our primary subject of analysis.
+contain a valid Simplified Syntax Tree.\todo{What is a Simplified
+  Syntax Tree?  Introduce this in the front part of the section, overviewing the
+approach} These \textit{EditEvent's} 
+are our primary subject of analysis.
 
 \subsection{Simplified Syntax Tree Differencing}
 \label{sstDiff}
-Once we have two consecutive \textit{EditEvent's} within
+
+Given two consecutive \textit{EditEvent's} within
 a debugging region, we procede to analyze the differences
 between their two associated Simplified Syntax Trees (SST).
-These are the modifications the developer performed
+These correspond to the modifications the developer performed
 while debugging.
-To perform the difference between trees we use the 
+We use the 
 state-of-the-art tree differencing
-tool APTED~\cite{Pawlik16Apted}.
-We recursively go through each of the statements in the 
-SST's creating a representation that can be understood by
-APTED. 
-Once we know which nodes were modified from one \textit{EditEvent}
-to the following, we record their corresponding statement types.
+tool APTED~\cite{Pawlik16Apted}, recursively converting the SST's into a
+representation readable by APTED. 
+Once we know which nodes were modified between \textit{EditEvent}s, we record
+their corresponding statement types. 
 
 \subsection{Statement Kind Distribution and Association Rule Creation}
 
-We analyzed the distribution of statement kinds being modified
-in the corpus.
+We analyzed the distribution of statement kinds modified
+in the corpus.  EditEvent's may modify more than one
+statement kind, therefore the sum of these distribution
+does not sum to 100\%.
 From our 1,748 events, the most commonly modified statement
-kinds are ExpressionStatement's which are modified in 1,272 
-events of
-the corpus (72.8\%), followed by Assignment's modified in 1,186
+kinds are ExpressionStatements, modified in 1,272  (72.8\%) corpus events,
+followed by Assignment's modified in 1,186 
 events (67.8\%). VariableDeclaration's are modified in 1,071
 events (61.3\%) and ReturnStatement's are modified in 714
 events (40.8\%).\footnote{The full list of Statement kind
 distrubtion of the corpus is located in the anonymouos folder 
 https://www.dropbox.com/sh/lei59ywj1ok7gfk/AACc7JyJ-BcCa9-Kt1BqzGWja?dl=0} 
-EditEvent's may modify more than one
-statement kind, therefore the sum of these distribution
-does not sum to 100\%.
-
+\todo{Takeaway from this?  Implication for APR?  One sentence summary of the
+  high level point.}
 
 
 %Table~\ref{corpusDist} shows the top 10 most commonly modified 
@@ -321,65 +322,68 @@ does not sum to 100\%.
 %\end{tabular}
 %\end{table}
 
-To restrict the statement kinds that are applied together for 
+To collect rules for statement kinds that are modified together in
 multi-edit patches, we use Apriori~\cite{Agrawal94} to create
 association rules.
-Association rule learning is a machine learning mechanism to identify
-strong relationships between objects in large datasets. 
-As a result, we obtain association rules, which are implications of the
-form $X \implies Y$, where $X$ is called the antecedent and 
-$Y$ is called the consequent.
+Association rule learning is a machine learning mechanism that identifies
+relationships between objects in large datasets. 
+Association rules are implications of the
+form $X \implies Y$.
+% antecedent->conequent is a known thing from logic
 This learning mechanism takes into 
-account \textit{Confidence} (a measure of the likelyhood 
+account \textit{Confidence} (a measure of the likelihood 
 of the consequent section being present given the 
 antecedent) and \textit{Support} (how frequently the set of
 statement types in the rule occurs in the corpus).
 
 Using our corpus of edits and their associated statement types, 
 we create association rules that provide guidelines
-for what statement types are applied commonly together. 
+for what statement types are modified together commonly. 
 
 \section{Evaluation}
 \label{eval}
+
 We evaluate the modified statement kind selection process
 by comparing a random selection against our History-based 
 approach which gives higher priority to more commonly 
-modified statement kinds. Then we evaluate the association
-rules by measuring the percentage of instances they are able to 
+modified statement kinds. We then evaluate the association
+rules by measuring the percentage of edit instances they correctly predict, or 
 cover.
 
-\subsection{History-Based Statement Kind Selection}
-To evaluate the distribution of the statement kinds being modified
+\subsection{History-Based Statement Selection}
+
+To evaluate the distribution of the statement kinds modified
 in the corpus, we compare against an equally distributed counterpart.
 This simulates the process being used by most current APR approaches
 where blocks of code are analyzed using a fault localization 
+\todo{This sentence is not grammatical, please fix.}
 mechanism and randomly selecting an statement from the most
 suspicious block.
 
 We use 10 fold
-cross validation to avoid training and testing in the same data
+cross validation to avoid training and testing on the same data
 when evaluating a selection bounded by the distribution
-learned. For each of the folds we perform the following
-tasks:
-We iterate through each of the EditEvent's in the fold. For
+\todo{this sentence is not parsing for me, I'm afraid.  Perhaps simplify it.}
+learned. For each of the folds, we
+iterate through each EditEvent. For
 the equally distributed approach, we randomly select one from 
-the possible statement kinds and check if the selected
+all possible statement kinds and check if the selected
 statement kind was modified in the EditEvent.
 For our history-informed approach, we create a distribution
-of the statement kinds being modified from the complement of the fold, 
+of the statement kinds modified from the complement of the fold, 
 and select a statement
-kind bounded by the distribution 
-learned from the complement. The more commonly modified statement
+kind bounded by the associated distribution.
+The more commonly modified statement
 kinds are more likely to be chosen than the less commonly modified
 statement kinds.
 
-Table~\ref{10FoldEDvsHB} describes the results per each of the folds evaluated.
-In average 
-the History-based approach is able to correctly guess one of the statement kinds modified
-in each of the instances of the fold being evaluated 49.54\% of the times. The Equally distributed approach
-in average is able to correctly guess one of the statement kinds being modified in 5.11\% 
-of the evaluated instances of each fold.
-Two sample t-test indicates that the difference between Equally distributed and History-based approaches are statistically significant ($\alpha$ < 0.05).
+Table~\ref{10FoldEDvsHB} describes the results per each evaluated fold.
+On average, 
+the History-based approach is able to correctly guess one of the statement kinds
+49.54\%. The Equally distributed approach
+on average is only able to correctly guess 5.11\% of the time.
+Two sample t-test indicates that the difference between the Equally distributed
+and History-based approaches is statistically significant ($\alpha$ < 0.05).
 
 
 \begin{table}[]
@@ -414,11 +418,12 @@ Std Dev & 2.45 & 1.39 & 8.15 & 4.43 \\
 
 
 \subsection{Association Rule Coverage}
-To evaluate the effectiveness
-of the association rules and how these can build the
-necesary edits to create successful multi-edit patches we first
+
+We next evaluate the effectiveness
+of the association rules and their potential for use in building the
+necesary edits to create successful multi-edit patches. We first
 remove from our corpus the instances where the developers
-performed a single edit. This is because association rules
+performed a single edit.\todo{how many?} This is because association rules
 by definition require at least two elements: an antecedent
 and a consequent. 
 
@@ -443,7 +448,10 @@ where the developer modified an Assignment, a ForLoop and an IfElseBlock.
 The rules shown in Table~\ref{rulesandinstances} represent rules created
 from the remaining nine folds of the corpus. In our example: Rule~1 
 indicates that when an Assignment and a ForLoop have been modified,
-the next step is to modify an IfElseBlock.
+the next step is to modify an \texttt{IfElseBlock}.\todo{I added the tt tag
+  around the IfElseBlock; please do the same around other instances of statement
+  kind descriptions througout (like assignment, forloop, etc).  Use typesetting
+  to help your reader parse.}
 
 
 \begin{table}[ht]
@@ -485,46 +493,49 @@ accurate rules, in which it is very likely that when the antecedent
 is present the concequent will be present as well. But this approach
 does not allow for much flexibility and the rules overfit to the corpus 
 they were created from. Lower 
-confidence, creates a wide set of rules that are less accurate (if
+confidence creates a wide set of rules that are less accurate (if
 the antecedent is present is does not necessarily mean that the 
 consequent will be present as well) but more flexible. 
 
-Previous studies show that in the 0\%-100\% spectrum, 
-90\% confidence is an adecuate threshold 
-for mantaining a balance between accuracy and flexibility when evaluated
-discretely in intervals of 10 percentage points~\cite{Soto18}.
-In this study we take it one step further and analyze the midpoint between 90\%
-confidence and 100\% confidence.
+% CLG: I cut the reference to your prior paper because you used it broadly as
+% though it were talking about all a priori learning and it's not, it's just
+% about one use case (and not this one.)
 For each confidence
-threshold, we evaluated association rule coverage on a held out
-dataset. For this we perform
+threshold of 90\%, 95\%, and 100\%, we evaluated association rule coverage on a held out
+dataset, using 
 a standard 10 fold cross validation process. Finally, we aggregate the results
 from all folds.
 
 Figure~\ref{ruleEvaluation} shows our results for each of the 
 different confidence thresholds as described below.
 
+\vspace{1em}
 \noindent\textbf{90\% confidence threshold:}
 When evaluating the rules created under a 90\% threshold, 94.14\% of the 
 events are fully covered, 1.87\% are partially covered, and 3.99\% are
 not covered. When using this approach, an average of 2837.2 rules were
 created for the 10 folds.
 
+\vspace{1em}
 \noindent\textbf{95\% confidence threshold:}
 93.80\% of the testing instances are fully covered, 2.04\% are
-partially covered, and 4.9\% are not covered. In average 2134.3 rules
+partially covered, and 4.9\% are not covered. On, average 2134.3 rules
 were created.
 
+\vspace{1em}
 \noindent\textbf{100\% confidence threshold:}
 Finally, 35.85\% are fully
 covered, 2.29\% are partiallly covered, and 72.80\% are not covered.
-In average 1484.6 rules were created when using this approach.
+On average, 1484.6 rules were created when using this approach.
 
+\vspace{1em}
 We found that when creating association
-rules with empirical data for automatic program repair, 95\% confidence
-is an even better threshold than 90\% because it maintains very similar flexibility 
-to the 90\% threshold but improves the accuracy by increasing the confidence. 
-This also means that the number of rules created decreases, which improves
+rules with empirical data for automatic program repair, 95\% confidence appears
+idea: 
+it maintains very similar flexibility 
+to the 90\% threshold with improved accuracy.
+This also means that the number of rules created decreases, which helpfully
+restricts 
 the search space by restricting it to a smaller number of more accurate rules.
  
 
@@ -543,6 +554,9 @@ results when using 90\%, 95\% and 100\% confidence thresholds correspondingly.}
 \end{figure}
 
 \section{Threats to Validity / Related Work} \label{threatsVal}
+
+\todo{You can't just munge threats and related work together.  They're unrelated.  Put threats in a
+  subsection in the previous section and related work in its own section.}
 
 \noindent\textbf{Internal validity:}
 To tackle possible errors in our implementation and experiments, we release our code
@@ -576,10 +590,15 @@ applied by humans when fixing errors and templates that can be mined from
 their corpus. HDRepair~\cite{xuan16} 
 uses fix history at a broader level
 to assess patch suitability.
-
+\todo{Add the paper from ...someone and Su on empirical study of debugging (ICSE
+  '15).  Also, you very very obviously need to cite Prophet.  We're obviously
+  not proposing a new APR technqiue (which you should say), but you definitely
+  need to cite prophet.  Check your own SANER paper, there are at least a couple
+of very related pieces of work to add.}
 
 \section{Conclusions}
 \label{conclusions}
+
 In this study we mined the dataset provided by the MSR Challenge~\cite{msr18challenge}
 to create a corpus of highly granular edits performed by developers in the process
 of fixing an error in source code. We identify debugging
@@ -592,18 +611,16 @@ how a search process bounded by this history can correctly guess (49.54\% of
 cases) what statement kind is modified to fix an error, as opposed to its
 equally distributed counterpart (5.11\% of the cases).
 
-We then create association rules to be able to obtain guidelines of what kinds of
+We then create association rules toprovide guidelines of what kinds of
 statement to edit together to create successful multi-edit patches. 
-We create these association rules using three different confidence thresholds and
-we evaluate their coverage.
 We measure how many of the events
-can be fully, partially, or not covered by the association rules.
-Our findings indicate that 95\% is a better confidence threshold as 
-opposed to 90\% as presented in previous studies~\cite{Soto18}. 
+can be fully, partially, or not covered by the association rules; we find that
+95\% appears to be the preferred condifence threshhold.
 We are able to fully cover 93.80\% of the events with a 95\% confidence threshold
 which increases the accuracy of the rules created and decreases the 
 number of rules, therefore helping delimit the vast search space 
-in automatic program repair.
+in automatic program repair.\todo{Sentence about future work, wherein we will
+  presumably use these models to inform multi-edit repair.}
 
 
 %Below are shown the top 10 rules created with a 95\% confidence, a full list can be 
