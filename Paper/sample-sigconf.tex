@@ -84,7 +84,7 @@ when fixing an error.
 We construct a corpus for analysis by 
 delimiting debugging regions in the provided dataset and 
 recursively analyze the
-differences between the SST's associatiated with EditEvent's. 
+differences between the SST's associated with EditEvent's. 
 We build a distribution of statement kinds with their corresponding
 likelihood of being modified and we validate the usage of this 
 distribution to guide the statement selection.
@@ -176,7 +176,7 @@ the confidence level of the learned rules.
 We found that when we use a 95\% confidence
 threshold, we can create association
 rules that maintain the same flexibility as 
-lower confidence thersholds, but increases
+lower confidence thresholds, but increases
 the accuracy of the created rules and decreases the number of rules
 delimiting even more the search space of potential edits
 performed by APR approaches to obtain successful patches.
@@ -259,7 +259,7 @@ are our primary subject of analysis.
 \label{sstDiff}
 
 Given two consecutive \textit{EditEvent's} within
-a debugging region, we procede to analyze the differences
+a debugging region, we proceed to analyze the differences
 between their two associated Simplified Syntax Trees (SST).
 These correspond to the modifications the developer performed
 while debugging.
@@ -283,7 +283,7 @@ followed by \texttt{Assignment}'s modified in 1,186
 events (67.8\%). \texttt{VariableDeclaration}'s are modified in 1,071
 events (61.3\%) and \texttt{ReturnStatement}'s in 714
 events (40.8\%).\footnote{The full list of Statement kind
-distrubtion of the corpus is located in the anonymouos folder 
+distribution of the corpus is located in the anonymous folder 
 http://bit.ly/2EMBeh3} This confirms our initial hypothesis that
 not all statement kinds are modified equally.
 
@@ -423,7 +423,7 @@ Std Dev & 2.45 & 1.39 & 8.15 & 4.43 \\
 
 We next evaluate the effectiveness
 of the association rules and their potential for use in building the
-necesary edits to create successful multi-edit patches. We first
+necessary edits to create successful multi-edit patches. We first
 remove from our corpus the instances where the developers
 performed a single edit. This removed 578 instances from the initial 1,748.
 We perform this restriction because association rules
@@ -478,7 +478,7 @@ the next step is to modify an \texttt{IfElseBlock}.
 In this example, Event~1 is fully covered since Rule~1 covers all
 the edits in the event. For Event~2, Rule~1 does not apply, even though
 Event~2 contains the antecedent of Rule~1, it does not contain the 
-concequent, therefore the rule is discarded. Rule~2 does apply to 
+consequent, therefore the rule is discarded. Rule~2 does apply to 
 cover the latter two
 edits of Event~2,
 therefore Event~2 is partially covered. Finally Event~3 is not covered,
@@ -491,7 +491,7 @@ Finally we performed this analysis at 3 different confidence thresholds
 number of rules that can be created with lower confidence. 
 Higher confidence produces a small set of very
 accurate rules, in which it is very likely that when the antecedent
-is present the concequent will be present as well. But this approach
+is present the consequent will be present as well. But this approach
 does not allow for much flexibility and the rules overfit to the corpus 
 they were created from. Lower 
 confidence creates a wide set of rules that are less accurate (if
@@ -526,7 +526,7 @@ were created.
 \vspace{1em}
 \noindent\textbf{100\% confidence threshold:}
 Finally, 35.85\% are fully
-covered, 2.29\% are partiallly covered, and 72.80\% are not covered.
+covered, 2.29\% are partially covered, and 72.80\% are not covered.
 On average, 1484.6 rules were created when using this approach.
 
 \vspace{1em}
@@ -558,7 +558,7 @@ results when using 90\%, 95\% and 100\% confidence thresholds correspondingly.}
 \noindent\textbf{Internal validity:}
 To tackle possible errors in our implementation and experiments, we release our code
 to be reviewed by the other researchers.\footnote{All instruments
-and source code can be found in the anonymouos folder 
+and source code can be found in the anonymous folder 
 http://bit.ly/2EMBeh3} 
 We also use 10 fold cross validation 
 to reduce the risk of training and testing on the same data.  
@@ -587,7 +587,7 @@ their corpus. HDRepair~\cite{xuan16}
 uses fix history at a broader level
 to assess patch suitability.
 Zhong and Su~\cite{zhong15} conduct an empirical study on six popular Java 
-projects anallyzing the incidence of three mutation operators. 
+projects analyzing the incidence of three mutation operators. 
 Martinez and
 Monperrus~\cite{martinez15} study mutation operator incidence across 
 14 projects.
@@ -616,7 +616,7 @@ We then create association rules to provide guidelines of what kinds of
 statement to edit together to create successful multi-edit patches. 
 We measure how many of the events
 can be fully, partially, or not covered by the association rules; we find that
-95\% appears to be the preferred condifence threshhold.
+95\% appears to be the preferred confidence threshold.
 We are able to fully cover 93.80\% of the events with a 95\% confidence threshold
 which increases the accuracy of the rules created and decreases the 
 number of rules, therefore helping delimit the vast search space 
