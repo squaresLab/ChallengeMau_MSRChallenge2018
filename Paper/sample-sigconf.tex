@@ -105,42 +105,52 @@ can create less and more accurate rules that fully cover 93.8\% of the testing i
 \maketitle
 
 \section{Introduction}
-Error repair is one of the most resource consuming tasks in 
-the software development process~\cite{Weiss07,Tassey02,Britton13}.
+\todo{Kill the author block; it's double-blind.}
+\todo{Title is too long and somewhat innaccurate; let's develop something better.}
+Bug repair is one of the most resource consuming tasks in 
+software development~\cite{Weiss07,Tassey02,Britton13}.
 In the last decade there has been increasing attention to 
-the concept of automatic program repair (APR). These are a 
-series of approaches whose intent is to repair software
+techniques for automatic program repair (APR), which 
+repair software bugs
 automatically (e.g.~\cite{legoues12,kim2013,Weimer13,long16proph}).
-A well-known family of techniques follows the \emph{generate-and-validate}
-approach (e.g.~\cite{legoues12,kim2013,Qi13TrpAutoR,xuan16}), 
-which take as input a buggy program and a test suite containing
+One family of techniques follows a syntactic \emph{generate-and-validate}
+approach (e.g.~\cite{legoues12,kim2013,Qi13TrpAutoR,xuan16}). These techniques
+take as input a buggy program and a test suite containing
 passing tests cases and failing test cases (which expose a defect).
-The approaches then \emph{generate} variants of the buggy program
-called patch candidates, and \emph{validate} these patch
+The approaches then \emph{generate} 
+patch candidates by applying and combining syntactic source transformations, and \emph{validate} these 
 candidates against the test suite.
 
-This process is particularly difficult because the search space
-for creating patch candidates is infinite. To create a patch 
-candidate the approach needs to pick a series of edits to apply.
-Currently most APR approaches use fault localization mechanisms to 
-narrow down which possible blocks of code are
-more suspicious than others.  
-These blocks are 
-a set of several possible statements, all of which are assigned
-the same likelihood of being selected for modification.
-Ultimately one of them is selected at random.
+One challenge in in this process is that the search space
+of patch candidates is trivially infinite.  APR approaches thus restrict the
+considered transformations, and use off-the-shelf fault
+localization~\cite{example} to reduce the number of locations considered for
+editing. One problem is that 
+statistical fault localization can often assign multiple statements
+the same score~\cite{ref}.  \todo{...multi-edit repair? I know it's not all we
+  do, but now the whole thread has been lost.  Add an argument here, motivate
+  multi-edit repair.  That's the real bread-and-butter of this thing.}
+
+
 We believe this selection could be improved by using
 developer's
-edit history. We therefore analyze the most commonly 
+edit history. \todo{Our belief is not a great motivation.  There's evidence here
+  from prior work (including our own, that we can cite).  Make this more
+  scientific.} We therefore analyze the most commonly 
 modified statement kinds and evaluate how the 
 fault localization process can benefit from assigning
 a higher priority to the statements most commonly modified.
+
+\todo{This introduction now motivates only the non-multi-edit results but only
+  describes the multi-edit experiment.  It needs to motivate both and describe
+  both.}
 
 We mined changes performed by developers in the debugging
 process by delimiting debugging regions in the 
 dataset~\cite{msr18challenge} and comparing the simplified syntax
 trees (SST) of consecutive \textit{EditEvent's} using an 
-state-of-the-art tree differencing tool~\cite{Pawlik16Apted}.
+state-of-the-art tree differencing tool~\cite{Pawlik16Apted}.\todo{Need to
+  introduce the dataset with like, a half a sentence, before referring to it here.}
 We then gather the statement kinds edited when
 differencing SST's and apply the association
 rule learning algorithm Apriori~\cite{Agrawal94}
