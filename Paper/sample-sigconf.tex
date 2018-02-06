@@ -31,7 +31,7 @@
 
 
 \begin{document}
-\title{Common Statement Kind Changes and their Application in Automatic Program Repair}
+\title{Common Statement Kind Changes to Inform Automatic Program Repair}
 %\titlenote{Produces the permission block, and
 %  copyright information}
 %\subtitle{Extended Abstract}
@@ -39,23 +39,35 @@
 %  \texttt{acmart.pdf} document}
 
 
-\author{Mauricio Soto}
-\affiliation{%
-  \institution{Carnegie Mellon University}
-  \city{Pittsburgh}
-  \state{PA}
-  \postcode{15213}
-}
-\email{mauriciosoto@cmu.edu}
+%\author{Mauricio Soto}
+%\affiliation{%
+%  \institution{Carnegie Mellon University}
+%  \city{Pittsburgh}
+%  \state{PA}
+%  \postcode{15213}
+%}
+%\email{mauriciosoto@cmu.edu}
 
-\author{Claire Le Goues}
+%\author{Claire Le Goues}
+%\affiliation{%
+%  \institution{Carnegie Mellon University}
+%  \city{Pittsburgh}
+%  \state{PA}
+%  \postcode{15213}
+%}
+%\email{clegoues@cs.cmu.edu}
+
+\author{Authors Available Post Double Blind Review}
 \affiliation{%
-  \institution{Carnegie Mellon University}
-  \city{Pittsburgh}
-  \state{PA}
-  \postcode{15213}
+  \institution{~~}
+  \city{~~}
+  \state{~~}
+  \state{~~}
+  \state{~~}
+  \postcode{~~}
 }
-\email{clegoues@cs.cmu.edu}
+\email{  }
+
 
 
 % The default list of authors is too long for headers.
@@ -105,8 +117,7 @@ can create less and more accurate rules that fully cover 93.8\% of the testing i
 \maketitle
 
 \section{Introduction}
-\todo{Kill the author block; it's double-blind.}
-\todo{Title is too long and somewhat innaccurate; let's develop something better.}
+
 Bug repair is one of the most resource consuming tasks in 
 software development~\cite{Weiss07,Tassey02,Britton13}.
 In the last decade there has been increasing attention to 
@@ -118,39 +129,40 @@ approach (e.g.~\cite{legoues12,kim2013,Qi13TrpAutoR,xuan16}). These techniques
 take as input a buggy program and a test suite containing
 passing tests cases and failing test cases (which expose a defect).
 The approaches then \emph{generate} 
-patch candidates by applying and combining syntactic source transformations, and \emph{validate} these 
+patch candidates by applying and combining syntactic source transformations, and 
+\emph{validate} these 
 candidates against the test suite.
 
-One challenge in in this process is that the search space
+One challenge in this process is that the search space
 of patch candidates is trivially infinite.  APR approaches thus restrict the
 considered transformations, and use off-the-shelf fault
-localization~\cite{example} to reduce the number of locations considered for
+localization~\cite{legoues12} to reduce the number of locations considered for
 editing. One problem is that 
 statistical fault localization can often assign multiple statements
-the same score~\cite{ref}.  \todo{...multi-edit repair? I know it's not all we
-  do, but now the whole thread has been lost.  Add an argument here, motivate
-  multi-edit repair.  That's the real bread-and-butter of this thing.}
+the same score~\cite{Jones02}. Even further, patches that require
+more than one edit are commonly found in the real world and have
+been vastly understudied. The need for mechanisms that help guide
+the search space for multi-edit patches keeps growing.
 
-
-We believe this selection could be improved by using
-developer's
-edit history. \todo{Our belief is not a great motivation.  There's evidence here
-  from prior work (including our own, that we can cite).  Make this more
-  scientific.} We therefore analyze the most commonly 
+There is evidence that states that not all statements are modified
+equally, and approaches that are informed in human behavior produce
+better quality patches~\cite{kim2013,Soto18} 
+Therefore, we first analyze the most commonly 
 modified statement kinds and evaluate how the 
 fault localization process can benefit from assigning
 a higher priority to the statements most commonly modified.
+Second, we create association rules to describe relationships
+between statement kinds commonly modified together to inform
+the creation of multi-edit patch candidates. 
 
-\todo{This introduction now motivates only the non-multi-edit results but only
-  describes the multi-edit experiment.  It needs to motivate both and describe
-  both.}
-
+We use the dataset provided by the MSR Challenge~\cite{msr18challenge}
+which describes the actions performed
+by developers when coding.
 We mined changes performed by developers in the debugging
 process by delimiting debugging regions in the 
 dataset~\cite{msr18challenge} and comparing the simplified syntax
 trees (SST) of consecutive \textit{EditEvent's} using an 
-state-of-the-art tree differencing tool~\cite{Pawlik16Apted}.\todo{Need to
-  introduce the dataset with like, a half a sentence, before referring to it here.}
+state-of-the-art tree differencing tool~\cite{Pawlik16Apted}.
 We then gather the statement kinds edited when
 differencing SST's and apply the association
 rule learning algorithm Apriori~\cite{Agrawal94}
@@ -180,21 +192,16 @@ modified by developers when fixing errors in source code.
 
 \item We \textbf{evaluate
 the selection process} of statement kinds to be modified
-to fix source code errors, using history-based data, compared against
-an equally distributed random approach.
+to fix source code errors, using history-based data (49.54\% correctly guessed), compared against
+an equally distributed random approach (5.11\% correctly guessed).
 
 \item We \textbf{create association rules} that describe the behavior
-of statement kinds that developers modify commonly together.
-
-\item We provide a \textbf{higher granularity evaluation} 
-of confidence thresholds when creating
-association rules in the context of APR.\todo{I'm not sure what this means,
-  perhaps a rephrase?}
+of statement kinds that developers modify commonly together. 
+We evaluate the expressive power of the learned rules, we find
+that we can fully cover 93.8\% of the held-out events while maintaining
+95\% confidence.
 
 \end{itemize}
-
-\todo{On some or all of teh above: what are the results?  You describe what we
-  did, but not what we learn.}
 
 \section{Creating the Corpus}
 
@@ -229,7 +236,7 @@ the brackets demarcated with ``DA".
 Note that between delimiting points $\delta$ and $\epsilon$ there can be 
 several \textit{TestRunEvent's} with failing test cases, meaning
 that the developer is actively debugging the error pointed out
-by the failing test cases, but still hasn't been able to make
+by the failing test cases, but still has not been able to make
 all test cases pass.
 
 \begin{figure}[h]
@@ -280,9 +287,11 @@ events (67.8\%). VariableDeclaration's are modified in 1,071
 events (61.3\%) and ReturnStatement's are modified in 714
 events (40.8\%).\footnote{The full list of Statement kind
 distrubtion of the corpus is located in the anonymouos folder 
-https://www.dropbox.com/sh/lei59ywj1ok7gfk/AACc7JyJ-BcCa9-Kt1BqzGWja?dl=0} 
-\todo{Takeaway from this?  Implication for APR?  One sentence summary of the
+http://bit.ly/2EMBeh3} \todo{Takeaway from this?  Implication for APR?  One sentence summary of the
   high level point.}
+EditEvent's may modify more than one
+statement kind, therefore the sum of these distribution
+does not sum to 100\%.
 
 
 %Table~\ref{corpusDist} shows the top 10 most commonly modified 
@@ -562,7 +571,7 @@ results when using 90\%, 95\% and 100\% confidence thresholds correspondingly.}
 To tackle possible errors in our implementation and experiments, we release our code
 to be reviewed by the other researchers.\footnote{All instruments
 and source code can be found in the anonymouos folder 
-https://www.dropbox.com/sh/lei59ywj1ok7gfk/AACc7JyJ-BcCa9-Kt1BqzGWja?dl=0} 
+http://bit.ly/2EMBeh3} 
 We also use 10 fold cross validation 
 to reduce the risk of training and testing on the same data.  
 
