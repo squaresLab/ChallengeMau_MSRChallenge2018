@@ -39,34 +39,23 @@
 %  \texttt{acmart.pdf} document}
 
 
-%\author{Mauricio Soto}
-%\affiliation{%
-%  \institution{Carnegie Mellon University}
-%  \city{Pittsburgh}
-%  \state{PA}
-%  \postcode{15213}
-%}
-%\email{mauriciosoto@cmu.edu}
-
-%\author{Claire Le Goues}
-%\affiliation{%
-%  \institution{Carnegie Mellon University}
-%  \city{Pittsburgh}
-%  \state{PA}
-%  \postcode{15213}
-%}
-%\email{clegoues@cs.cmu.edu}
-
-\author{Authors Available Post Double Blind Review}
+\author{Mauricio Soto}
 \affiliation{%
-  \institution{~~}
-  \city{~~}
-  \state{~~}
-  \state{~~}
-  \state{~~}
-  \postcode{~~}
+  \institution{Carnegie Mellon University}
+  \city{Pittsburgh}
+  \state{PA}
+  \postcode{15213}
 }
-\email{  }
+\email{mauriciosoto@cmu.edu}
+
+\author{Claire Le Goues}
+\affiliation{%
+  \institution{Carnegie Mellon University}
+  \city{Pittsburgh}
+  \state{PA}
+  \postcode{15213}
+}
+\email{clegoues@cs.cmu.edu}
 
 
 
@@ -84,7 +73,7 @@ when fixing an error.
 We construct a corpus for analysis by 
 delimiting debugging regions in the provided dataset and 
 recursively analyze the
-differences between the SST's associated with EditEvent's. 
+differences between the Simplified Syntax Trees associated with EditEvent's. 
 We build a distribution of statement kinds with their corresponding
 likelihood of being modified and we validate the usage of this 
 distribution to guide the statement selection.
@@ -282,9 +271,8 @@ corpus events,
 followed by \texttt{Assignment}'s modified in 1,186 
 events (67.8\%). \texttt{VariableDeclaration}'s are modified in 1,071
 events (61.3\%) and \texttt{ReturnStatement}'s in 714
-events (40.8\%).\footnote{The full list of Statement kind
-distribution of the corpus is located in the anonymous folder 
-http://bit.ly/2EMBeh3} This confirms our initial hypothesis that
+events (40.8\%).\footnote{The full list is available in 
+https://github.com/squaresLab/MSRChallenge2018} This confirms our initial hypothesis that
 not all statement kinds are modified equally.
 
 
@@ -358,10 +346,10 @@ To evaluate the distribution of the statement kinds modified
 in the corpus, we compare against an equally distributed counterpart.
 This simulates the process being used by most current APR approaches
 where code is analyzed, using a fault localization 
-mechanism, and an statement is randomly selected from the most
+mechanism, and a statement is randomly selected from the most
 suspicious block.
 
-We evaluate the process of selecting an statement kind informed by 
+We evaluate the process of selecting a statement kind informed by 
 history-based data and check if it correctly predicts held-out 
 instances.
 We use 10 fold
@@ -558,8 +546,11 @@ results when using 90\%, 95\% and 100\% confidence thresholds correspondingly.}
 \noindent\textbf{Internal validity:}
 To tackle possible errors in our implementation and experiments, we release our code
 to be reviewed by the other researchers.\footnote{All instruments
-and source code can be found in the anonymous folder 
-http://bit.ly/2EMBeh3} 
+and source available in
+https://github.com/squaresLab/MSRChallenge2018} We use 
+the debugging regions based on \textit{TestRunEvent's} as a 
+proxy for debugging intent since capturing developer's intent 
+is a non-trivial task.
 We also use 10 fold cross validation 
 to reduce the risk of training and testing on the same data.  
 
@@ -644,7 +635,7 @@ statement kinds to modify based in the history of developer changes.
 
 
 \begin{acks}
- This section will be added for the camera-ready version.
+\todo{ This section will be added for the camera-ready version.}
 
 \end{acks}
 
